@@ -1,0 +1,9 @@
+{
+  "name": "fit-cosmo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trainings-Tracker (8-Wochen-Basisplan) als PWA",
+  "scripts": {
+    "start": "node serve.js"
+  }
+}

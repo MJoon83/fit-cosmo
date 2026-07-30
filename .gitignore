@@ -1,0 +1,5 @@
+# Persönliche Trainingsdaten und Backups - werden NICHT veröffentlicht
+daten/
+
+# macOS
+.DS_Store
