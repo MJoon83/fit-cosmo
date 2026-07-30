@@ -1,0 +1,28 @@
+{
+  "app": "fit@cosmo Trainings-Tracker",
+  "format": 2,
+  "exportedAt": "2026-07-30T12:00:00.000Z",
+  "hinweis": "Aus daten/training-verlauf.md rekonstruiert. Gewichte 17,5 / 7,5 / 22,5 wieder auf die echten Werte gesetzt (der alte Komma-Bug hatte sie zu 17 / 7 / 22 gemacht).",
+  "data": {
+    "sessions": [
+      {
+        "date": "2026-07-30",
+        "entries": {
+          "butterfly":    { "weight": 17.5, "s1": 12, "s2": 12, "s3": 12, "note": "" },
+          "rudern":       { "weight": 35,   "s1": 12, "s2": 12, "s3": 12, "note": "" },
+          "revbutterfly": { "weight": 7.5,  "s1": 12, "s2": 12, "s3": 10, "note": "" },
+          "brustpresse":  { "weight": 20,   "s1": 12, "s2": 12, "s3": 12, "note": "" },
+          "beinstrecker": { "weight": 22.5, "s1": 12, "s2": 12, "s3": 12, "note": "" },
+          "beinbeuger":   { "weight": 20,   "s1": 12, "s2": 12, "s3": 8,  "note": "" },
+          "urruecken":    { "weight": 25,   "s1": 12, "s2": 12, "s3": 12, "note": "" }
+        },
+        "cardio": {
+          "warm-min": 10, "warm-hr": 131, "warm-w": 65,
+          "cool-min": 0, "cool-hr": 0, "cool-w": 0
+        }
+      }
+    ],
+    "current": {},
+    "meta": {}
+  }
+}

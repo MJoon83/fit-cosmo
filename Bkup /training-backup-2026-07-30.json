@@ -1,0 +1,133 @@
+{
+  "app": "fit@cosmo Trainings-Tracker",
+  "format": 2,
+  "exportedAt": "2026-07-30T13:17:25.146Z",
+  "data": {
+    "sessions": [
+      {
+        "date": "2026-07-30",
+        "entries": {
+          "butterfly": {
+            "weight": 17.5,
+            "s1": 12,
+            "s2": 12,
+            "s3": 12,
+            "note": ""
+          },
+          "rudern": {
+            "weight": 35,
+            "s1": 12,
+            "s2": 12,
+            "s3": 12,
+            "note": ""
+          },
+          "revbutterfly": {
+            "weight": 7.5,
+            "s1": 12,
+            "s2": 12,
+            "s3": 10,
+            "note": ""
+          },
+          "brustpresse": {
+            "weight": 20,
+            "s1": 12,
+            "s2": 12,
+            "s3": 12,
+            "note": ""
+          },
+          "beinstrecker": {
+            "weight": 22.5,
+            "s1": 12,
+            "s2": 12,
+            "s3": 12,
+            "note": ""
+          },
+          "beinbeuger": {
+            "weight": 20,
+            "s1": 12,
+            "s2": 12,
+            "s3": 8,
+            "note": ""
+          },
+          "urruecken": {
+            "weight": 25,
+            "s1": 12,
+            "s2": 12,
+            "s3": 12,
+            "note": ""
+          }
+        },
+        "cardio": {
+          "warm-min": 10,
+          "warm-hr": 131,
+          "warm-w": 65,
+          "cool-min": 0,
+          "cool-hr": 0,
+          "cool-w": 0
+        }
+      }
+    ],
+    "current": {
+      "butterfly": {
+        "weight": 17.5,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "rudern": {
+        "weight": 35,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "revbutterfly": {
+        "weight": 7.5,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "brustpresse": {
+        "weight": 20,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "beinstrecker": {
+        "weight": 22.5,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "beinbeuger": {
+        "weight": 20,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "urruecken": {
+        "weight": 25,
+        "s1": null,
+        "s2": null,
+        "s3": null,
+        "note": ""
+      },
+      "cardio": {
+        "warm-min": null,
+        "warm-hr": null,
+        "warm-w": null,
+        "cool-min": null,
+        "cool-hr": null,
+        "cool-w": null
+      }
+    },
+    "meta": {
+      "updatedAt": "2026-07-30T13:17:11.456Z"
+    }
+  }
+}
