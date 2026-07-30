@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="Training">
 <meta name="theme-color" content="#101418">
 <title>Training</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <style>
   :root {
     --bg: #101418;
@@ -124,15 +127,32 @@
     flex: 1; height: 50px; border-radius: 12px; font-size: 15px; font-weight: 600;
     font-family: inherit; cursor: pointer; border: none;
   }
-  .btn-save { background: var(--accent); color: #06120d; flex: 2; }
+  .btn-save { background: var(--accent); color: #06120d; }
   .btn-save:active { background: var(--accent-dim); }
   .btn-save.done { background: var(--accent-dim); color: var(--ink); }
-  .btn-export {
-    flex: 0 0 auto; width: 60px; background: var(--surface-2);
-    border: 1px solid var(--line) !important; color: var(--ink-dim);
-    font-size: 13px; font-weight: 600;
+
+  /* Daten & Sicherung */
+  .btn-row { display: flex; gap: 8px; }
+  .btn-sec {
+    flex: 1; height: var(--tap); background: var(--surface-2);
+    border: 1px solid var(--line); color: var(--ink);
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    font-family: inherit; cursor: pointer;
   }
-  .btn-export:active { background: var(--line); }
+  .btn-sec:active { background: var(--line); }
+  .btn-sec:disabled { color: var(--ink-faint); cursor: default; }
+  .sel {
+    width: 100%; height: var(--tap); background: var(--surface-2);
+    border: 1px solid var(--line); color: var(--ink); border-radius: 10px;
+    padding: 0 10px; font-size: 14px; font-family: inherit;
+  }
+  .fineprint { font-size: 11px; color: var(--ink-faint); line-height: 1.55; margin: 16px 0 0; }
+  .card.warn { border-color: rgba(216,162,74,0.45); }
+  .card.warn .num { background: rgba(216,162,74,0.15); color: var(--ready); }
+  .dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--ready); margin-right: 5px; vertical-align: 1px;
+  }
 
   .toast {
     position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px);
@@ -221,15 +241,54 @@
     </div>
   </div>
 
+  <div class="section-label" style="margin-top:22px;">Daten &amp; Sicherung</div>
+  <div class="card" id="dataCard">
+    <div class="card-head" data-toggle>
+      <div class="num">💾</div>
+      <div class="card-title">
+        <div class="name">Daten &amp; Sicherung</div>
+        <div class="meta" id="dataMeta">—</div>
+      </div>
+      <div class="chev">▶</div>
+    </div>
+    <div class="body">
+      <div class="hint" id="backupHint"></div>
+      <div class="hint" id="recoverHint"></div>
+
+      <div class="field-label">Backup-Datei</div>
+      <div class="btn-row">
+        <button class="btn-sec" id="btnBackup">Backup speichern</button>
+        <button class="btn-sec" id="btnRestore">Backup laden</button>
+      </div>
+
+      <div class="field-label">Export zum Auswerten</div>
+      <div class="btn-row">
+        <button class="btn-sec" id="exportCsv">CSV</button>
+        <button class="btn-sec" id="exportMd">Markdown</button>
+      </div>
+
+      <div class="field-label">Schnappschüsse in dieser App</div>
+      <select class="sel" id="snapSelect"><option>lade …</option></select>
+      <button class="btn-sec" id="btnSnapRestore" style="margin-top:8px; width:100%;">Diesen Stand wiederherstellen</button>
+
+      <p class="fineprint">
+        Backup speichern legt eine JSON-Datei ab — auf dem iPhone am besten über
+        „In Dateien speichern“ in iCloud Drive. Diese Datei ist die einzige Sicherung,
+        die auch ein verlorenes oder zurückgesetztes iPhone übersteht.<br><br>
+        Schnappschüsse entstehen automatisch bei jedem gespeicherten Training und
+        liegen im Speicher dieses Geräts. Gut gegen Fehleingaben, kein Ersatz für ein Backup.
+      </p>
+      <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
+    </div>
+  </div>
+
   <footer>
-    Daten liegen nur auf diesem Gerät.<br>
+    Daten liegen nur auf diesem Gerät — regelmäßig Backup speichern.<br>
     Warm-up: 10 Min Crosstrainer · danach Faszien-Block
   </footer>
 </div>
 
 <div class="save-bar">
-  <button class="btn-export" id="exportCsv">CSV</button>
-  <button class="btn-export" id="exportMd">MD</button>
   <button class="btn-save" id="saveBtn">Training speichern</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -245,15 +304,123 @@ const EXERCISES = [
   { id: 'urruecken',   name: 'Unterer Rücken',            meta: 'Gerät 22',                    w: 25 },
 ];
 
-const STORE_KEY = 'martin_training_v1';
+const STORE_KEY  = 'fitcosmo_training_v2';
+const LEGACY_KEY = 'martin_training_v1';
 const CARDIO_FIELDS = ['warm-min','warm-hr','warm-w','cool-min','cool-hr','cool-w'];
-let data = load();
+const BACKUP_DUE_DAYS = 14;
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || { sessions: [], current: {} }; }
-  catch { return { sessions: [], current: {} }; }
+// ---------- Speicher: localStorage (sofort) + IndexedDB (Spiegel) ----------
+const DB_NAME = 'fitcosmo', DB_VERSION = 1, STATE_STORE = 'state', SNAP_STORE = 'snapshots';
+const MAX_SNAPSHOTS = 30;
+
+function emptyData() { return { sessions: [], current: {}, meta: {} }; }
+
+function normalize(d) {
+  const base = emptyData();
+  if (!d || typeof d !== 'object') return base;
+  base.sessions = Array.isArray(d.sessions) ? d.sessions : [];
+  base.current  = (d.current && typeof d.current === 'object') ? d.current : {};
+  base.meta     = (d.meta && typeof d.meta === 'object') ? d.meta : {};
+  return base;
 }
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+
+function loadLocal() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORE_KEY) || localStorage.getItem(LEGACY_KEY); } catch (e) {}
+  if (!raw) return emptyData();
+  try { return normalize(JSON.parse(raw)); } catch (e) { return emptyData(); }
+}
+
+let data = loadLocal();
+
+let storageWarned = false;
+function save() {
+  data.meta.updatedAt = new Date().toISOString();
+  const json = JSON.stringify(data);
+  try {
+    localStorage.setItem(STORE_KEY, json);
+  } catch (e) {
+    if (!storageWarned) { storageWarned = true; toast('Speicher voll — bitte Backup machen'); }
+  }
+  mirrorSoon(json);
+}
+
+let mirrorTimer = null;
+function mirrorSoon(json) {
+  clearTimeout(mirrorTimer);
+  mirrorTimer = setTimeout(() => idbPut(STATE_STORE, json, 'state'), 600);
+}
+
+let dbPromise = null;
+function db() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) { reject(new Error('IndexedDB nicht verfügbar')); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const d = req.result;
+      if (!d.objectStoreNames.contains(STATE_STORE)) d.createObjectStore(STATE_STORE);
+      if (!d.objectStoreNames.contains(SNAP_STORE))  d.createObjectStore(SNAP_STORE, { keyPath: 'ts' });
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+  return dbPromise;
+}
+
+function idbPut(store, value, key) {
+  return db().then(d => new Promise((res, rej) => {
+    const tx = d.transaction(store, 'readwrite');
+    if (key !== undefined) tx.objectStore(store).put(value, key);
+    else tx.objectStore(store).put(value);
+    tx.oncomplete = () => res(true);
+    tx.onerror = () => rej(tx.error);
+  })).catch(() => false);
+}
+
+function idbGet(store, key) {
+  return db().then(d => new Promise((res, rej) => {
+    const tx = d.transaction(store, 'readonly');
+    const q = tx.objectStore(store).get(key);
+    q.onsuccess = () => res(q.result);
+    q.onerror = () => rej(q.error);
+  })).catch(() => null);
+}
+
+function idbAll(store) {
+  return db().then(d => new Promise((res, rej) => {
+    const tx = d.transaction(store, 'readonly');
+    const q = tx.objectStore(store).getAll();
+    q.onsuccess = () => res(q.result || []);
+    q.onerror = () => rej(q.error);
+  })).catch(() => []);
+}
+
+function idbDelete(store, key) {
+  return db().then(d => new Promise((res, rej) => {
+    const tx = d.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(key);
+    tx.oncomplete = () => res(true);
+    tx.onerror = () => rej(tx.error);
+  })).catch(() => false);
+}
+
+// Schnappschuss anlegen und alte über MAX_SNAPSHOTS hinaus wegräumen
+function snapshot(reason) {
+  const rec = {
+    ts: new Date().toISOString(),
+    reason: reason,
+    count: data.sessions.length,
+    json: JSON.stringify(data),
+  };
+  return idbPut(SNAP_STORE, rec)
+    .then(() => idbAll(SNAP_STORE))
+    .then(all => {
+      const extra = all.map(r => r.ts).sort().slice(0, Math.max(0, all.length - MAX_SNAPSHOTS));
+      return Promise.all(extra.map(ts => idbDelete(SNAP_STORE, ts)));
+    })
+    .catch(() => {});
+}
 
 // letztes gespeichertes Gewicht je Übung finden, sonst Startwert
 function lastWeight(id, fallback) {
@@ -269,10 +436,15 @@ document.getElementById('sessionDate').value = todayISO();
 
 const container = document.getElementById('exercises');
 
+// Gewichte als echte Zahlen halten. Nicht aus der Anzeige zurücklesen —
+// die ist deutsch formatiert ("17,5") und parseFloat macht daraus 17.
+const weights = {};
+
 EXERCISES.forEach((ex, idx) => {
   const startW = lastWeight(ex.id, ex.w);
   const cur = data.current[ex.id] || {};
   const w = cur.weight != null ? cur.weight : startW;
+  weights[ex.id] = w;
 
   const card = document.createElement('div');
   card.className = 'card';
@@ -312,8 +484,8 @@ EXERCISES.forEach((ex, idx) => {
   container.appendChild(card);
 });
 
-// aufklappen
-container.addEventListener('click', e => {
+// aufklappen (auch für die Karte "Daten & Sicherung", die außerhalb von #exercises liegt)
+document.addEventListener('click', e => {
   const head = e.target.closest('[data-toggle]');
   if (head) { head.parentElement.classList.toggle('open'); }
   const hist = e.target.closest('[data-history]');
@@ -326,10 +498,10 @@ container.addEventListener('click', e => {
   if (!btn) return;
   const id = btn.getAttribute('data-id');
   const dir = btn.getAttribute('data-w') === 'plus' ? 2.5 : -2.5;
-  const el = document.getElementById('wval-' + id);
-  let v = parseFloat(el.textContent) + dir;
+  let v = (weights[id] != null ? weights[id] : 0) + dir;
   if (v < 0) v = 0;
-  el.textContent = fmt(v);
+  weights[id] = v;
+  document.getElementById('wval-' + id).textContent = fmt(v);
   document.getElementById('badge-' + id).textContent = fmt(v) + ' kg';
   stashCurrent(id);
 });
@@ -346,8 +518,7 @@ container.addEventListener('input', e => {
 
 function stashCurrent(id) {
   const c = data.current[id] || {};
-  const wv = document.getElementById('wval-' + id);
-  if (wv) c.weight = parseFloat(wv.textContent);
+  if (weights[id] != null) c.weight = weights[id];
   [1,2,3].forEach(s => {
     const el = document.getElementById('s'+s+'-'+id);
     if (el) c['s'+s] = el.value === '' ? null : parseInt(el.value, 10);
@@ -413,7 +584,14 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   data.current = {};
   save();
   toast('Training gespeichert ✓');
-  setTimeout(() => location.reload(), 700);
+  // vor dem Neuladen sicher wegschreiben: Spiegel + Schnappschuss
+  clearTimeout(mirrorTimer);
+  const written = Promise.all([
+    idbPut(STATE_STORE, JSON.stringify(data), 'state'),
+    snapshot('Training gespeichert'),
+  ]);
+  Promise.race([written, new Promise(r => setTimeout(r, 1500))])
+    .then(() => setTimeout(() => location.reload(), 500));
 });
 
 // ---- Export ----
@@ -437,7 +615,7 @@ function exportCSV() {
     EXERCISES.forEach(ex => {
       const e = s.entries[ex.id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        rows.push([s.date,'Kraft',ex.name,g(e.weight),g(e.s1),g(e.s2),g(e.s3),'','','',csvSafe(e.note)]);
+        rows.push([s.date,'Kraft',ex.name,csvNum(e.weight),g(e.s1),g(e.s2),g(e.s3),'','','',csvSafe(e.note)]);
       }
     });
     const c = s.cardio || {};
@@ -455,14 +633,14 @@ function exportMD() {
   if (!data.sessions.length) { toast('Keine gespeicherten Trainings'); return; }
   let md = '# Trainings-Verlauf\n\n';
   data.sessions.forEach(s => {
-    md += `## ${fmtDate(s.date)}${s.date.slice(0,4) !== '' ? ' ' + s.date.slice(0,4) : ''}\n\n`;
+    md += `## ${fmtDate(s.date)}${s.date.slice(0,4)}\n\n`;
     const c = s.cardio || {};
     if (c['warm-min'] != null) md += `**Warm-up:** ${g(c['warm-min'])} min · ${g(c['warm-hr'])} bpm · ${g(c['warm-w'])} W\n\n`;
     md += '| Übung | Gewicht | S1 | S2 | S3 | Notiz |\n|---|---|---|---|---|---|\n';
     EXERCISES.forEach(ex => {
       const e = s.entries[ex.id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        md += `| ${ex.name} | ${g(e.weight)} kg | ${g(e.s1)} | ${g(e.s2)} | ${g(e.s3)} | ${e.note||''} |\n`;
+        md += `| ${ex.name} | ${e.weight == null ? '' : fmt(e.weight)} kg | ${g(e.s1)} | ${g(e.s2)} | ${g(e.s3)} | ${e.note||''} |\n`;
       }
     });
     if (c['cool-min'] != null) md += `\n**Cardio:** ${g(c['cool-min'])} min · ${g(c['cool-hr'])} bpm · ${g(c['cool-w'])} W\n`;
@@ -473,6 +651,8 @@ function exportMD() {
 }
 
 function g(v){ return v == null ? '' : v; }
+// Dezimalkomma, damit deutsches Excel/Numbers 17,5 nicht als 175 liest
+function csvNum(v){ return v == null ? '' : String(v).replace('.', ','); }
 function csvSafe(s){ return (s||'').replace(/[;\n]/g,' '); }
 
 document.getElementById('exportCsv').addEventListener('click', exportCSV);
@@ -503,9 +683,199 @@ function stashCardio() {
   save();
 }
 
+// ---- Daten & Sicherung ----
+function daysSince(iso) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (isNaN(t)) return null;
+  return Math.floor((Date.now() - t) / 86400000);
+}
+
+function fmtStamp(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '?';
+  const p = n => String(n).padStart(2, '0');
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}. ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function renderDataCard() {
+  const card = document.getElementById('dataCard');
+  const metaEl = document.getElementById('dataMeta');
+  const hint = document.getElementById('backupHint');
+  const n = data.sessions.length;
+  const d = daysSince(data.meta.lastBackup);
+
+  let txt;
+  if (d === null) txt = 'noch kein Backup';
+  else if (d <= 0)  txt = 'Backup von heute';
+  else if (d === 1) txt = 'Backup von gestern';
+  else txt = `Backup vor ${d} Tagen`;
+
+  const due = d === null ? n > 0 : d >= BACKUP_DUE_DAYS;
+  metaEl.innerHTML = `${due ? '<span class="dot"></span>' : ''}${n} ${n === 1 ? 'Training' : 'Trainings'} · ${txt}`;
+  card.classList.toggle('warn', due);
+
+  if (due) {
+    hint.className = 'hint ready';
+    hint.textContent = 'Backup fällig. Datei speichern und in iCloud Drive ablegen — das ist die einzige Sicherung, die das Gerät überlebt.';
+  } else if (n === 0) {
+    hint.className = 'hint hold';
+    hint.textContent = 'Noch keine gespeicherten Trainings.';
+  } else {
+    hint.className = 'hint hold';
+    hint.textContent = 'Sicherung ist aktuell.';
+  }
+}
+
+function backupPayload() {
+  return JSON.stringify({
+    app: 'fit@cosmo Trainings-Tracker',
+    format: 2,
+    exportedAt: new Date().toISOString(),
+    data: { sessions: data.sessions, current: data.current, meta: data.meta },
+  }, null, 2);
+}
+
+async function saveBackup() {
+  const name = `training-backup-${todayISO()}.json`;
+  const json = backupPayload();
+  let shared = false;
+  try {
+    if (navigator.canShare && typeof File === 'function') {
+      const file = new File([json], name, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Trainings-Backup' });
+        shared = true;
+      }
+    }
+  } catch (err) {
+    if (err && err.name === 'AbortError') return;   // abgebrochen: nichts vermerken
+  }
+  if (!shared) downloadFile(name, json, 'application/json');
+  data.meta.lastBackup = new Date().toISOString();
+  save();
+  renderDataCard();
+  toast('Backup erstellt ✓');
+}
+
+async function applyRestore(incoming, reason) {
+  await snapshot(reason);
+  data = incoming;
+  save();
+  clearTimeout(mirrorTimer);
+  await idbPut(STATE_STORE, JSON.stringify(data), 'state');
+  toast('Wiederhergestellt ✓');
+  setTimeout(() => location.reload(), 600);
+}
+
+document.getElementById('btnBackup').addEventListener('click', saveBackup);
+document.getElementById('btnRestore').addEventListener('click', () => document.getElementById('restoreFile').click());
+
+document.getElementById('restoreFile').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  let parsed;
+  try { parsed = JSON.parse(await file.text()); }
+  catch (err) { toast('Datei nicht lesbar'); return; }
+  const incoming = normalize(parsed && parsed.data ? parsed.data : parsed);
+  if (!incoming.sessions.length && !Object.keys(incoming.current).length) {
+    toast('Keine Trainingsdaten in der Datei'); return;
+  }
+  const ok = confirm(
+    `Backup enthält ${incoming.sessions.length} Trainings.\n` +
+    `Aktuell in der App: ${data.sessions.length}.\n\n` +
+    `Aktuellen Stand ersetzen?\nVorher wird automatisch ein Schnappschuss angelegt.`
+  );
+  if (!ok) return;
+  applyRestore(incoming, 'vor Wiederherstellung aus Datei');
+});
+
+let snapList = [];
+function renderSnapshots() {
+  const sel = document.getElementById('snapSelect');
+  const btn = document.getElementById('btnSnapRestore');
+  return Promise.all([idbAll(SNAP_STORE), idbGet(STATE_STORE, 'state')]).then(([all, mirrorJson]) => {
+    const list = all.slice();
+    if (mirrorJson) {
+      try {
+        const m = normalize(JSON.parse(mirrorJson));
+        if (m.sessions.length > data.sessions.length) {
+          list.push({
+            ts: m.meta.updatedAt || new Date().toISOString(),
+            reason: 'Kopie im Gerätespeicher',
+            count: m.sessions.length,
+            json: mirrorJson,
+          });
+        }
+      } catch (err) {}
+    }
+    snapList = list.sort((a, b) => (a.ts < b.ts ? 1 : -1));
+    if (!snapList.length) {
+      sel.innerHTML = '<option>noch keine Schnappschüsse</option>';
+      sel.disabled = true; btn.disabled = true;
+      return;
+    }
+    sel.disabled = false; btn.disabled = false;
+    sel.innerHTML = snapList.map((s, i) =>
+      `<option value="${i}">${fmtStamp(s.ts)} · ${s.count} ${s.count === 1 ? 'Training' : 'Trainings'} · ${s.reason || 'Schnappschuss'}</option>`
+    ).join('');
+  });
+}
+
+document.getElementById('btnSnapRestore').addEventListener('click', () => {
+  const idx = parseInt(document.getElementById('snapSelect').value, 10);
+  const snap = snapList[idx];
+  if (!snap) return;
+  let incoming;
+  try { incoming = normalize(JSON.parse(snap.json)); }
+  catch (err) { toast('Schnappschuss beschädigt'); return; }
+  const ok = confirm(
+    `Stand vom ${fmtStamp(snap.ts)} mit ${incoming.sessions.length} Trainings laden?\n\n` +
+    `Der aktuelle Stand (${data.sessions.length} Trainings) wird ersetzt, vorher aber als Schnappschuss gesichert.`
+  );
+  if (!ok) return;
+  applyRestore(incoming, 'vor Rückkehr zu Schnappschuss');
+});
+
+// Falls localStorage geleert wurde, IndexedDB aber noch Daten hat: retten.
+function checkMirror() {
+  idbGet(STATE_STORE, 'state').then(json => {
+    if (!json) {
+      if (data.sessions.length) idbPut(STATE_STORE, JSON.stringify(data), 'state');
+      return;
+    }
+    let mirror;
+    try { mirror = normalize(JSON.parse(json)); } catch (err) { return; }
+    if (mirror.sessions.length <= data.sessions.length) return;
+
+    if (data.sessions.length === 0 && !sessionStorage.getItem('fitcosmo_recovered')) {
+      try { sessionStorage.setItem('fitcosmo_recovered', '1'); } catch (err) {}
+      data = mirror;
+      save();
+      toast('Daten aus der Sicherheitskopie wiederhergestellt');
+      setTimeout(() => location.reload(), 1200);
+      return;
+    }
+    const h = document.getElementById('recoverHint');
+    h.className = 'hint ready';
+    h.textContent = `Im Gerätespeicher liegt eine Kopie mit ${mirror.sessions.length} Trainings, geladen sind ${data.sessions.length}. Unten unter Schnappschüsse wiederherstellbar.`;
+  });
+}
+
 // erste Karte offen zeigen
 if (container.firstElementChild) container.firstElementChild.classList.add('open');
 EXERCISES.forEach(ex => updateHint(ex.id));
+renderDataCard();
+renderSnapshots();
+checkMirror();
+
+// Service Worker: macht die App offline-fähig (nur über http/https, nicht per Doppelklick)
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
