@@ -8,6 +8,31 @@ doppelte Progression, plus Warm-up- und Cardio-Block).
 Läuft komplett im Browser, ohne Server und ohne Account. Die Trainingsdaten
 liegen ausschließlich auf dem Gerät, mit dem du die App benutzt.
 
+## Ansichten
+
+Oben umschaltbar:
+
+- **Training** — Eingabe: Warm-up, sieben Geräte mit doppelter Progression, Cardio,
+  darunter die Karte *Daten & Sicherung*.
+- **Auswertung** — Kennzahlen, Monatskalender mit den Trainingstagen (blätterbar),
+  je Übung eine Grafik (Linie = Gewicht, Balken = Wiederholungen gesamt, gestrichelt
+  bei 36 = 3×12), Cardio-Minuten mit Ziellinie bei 60.
+
+## Farben
+
+Angelehnt an die Studio-Website: Rot `#e83a34`, Dunkelblau `#263978`,
+Petrol `#236978`, Türkis `#32dad4`. Hell- und Dunkelmodus folgen automatisch der
+iPhone-Einstellung. Bewusst **ohne** Logo, Wortmarke oder Bilder des Studios —
+Farbwerte sind frei verwendbar, die Marke nicht.
+
+## Offene Punkte
+
+- [ ] Backup `daten/training-backup-start.json` in der Homescreen-App einlesen
+      (Training vom 30.07.)
+- [ ] Auf dem iPhone prüfen, ob die Statusleiste in beiden Modi lesbar ist
+- [ ] Nach dem Icon-Wechsel: Homescreen-Icon einmal löschen und neu anlegen,
+      sonst bleibt das alte grüne Icon liegen
+
 ## Dateien
 
 | Datei | Zweck |

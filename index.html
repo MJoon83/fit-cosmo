@@ -4,27 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Training">
-<meta name="theme-color" content="#101418">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f6f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1524" media="(prefers-color-scheme: dark)">
 <title>Training</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <style>
+  /* Farbwelt angelehnt an fit@COSMO: Rot #e83a34, Dunkelblau #263978,
+     Petrol #236978, Türkis #32dad4. Hell ist die Grundeinstellung,
+     der Dunkelmodus greift automatisch nach iPhone-Einstellung.
+     Kein Logo, keine Schriftzüge, keine Bilder des Studios. */
   :root {
-    --bg: #101418;
-    --surface: #181e24;
-    --surface-2: #202830;
-    --line: #2c353f;
-    --ink: #eef2f5;
-    --ink-dim: #8b97a3;
-    --ink-faint: #5a6570;
-    --accent: #4a9d7f;
-    --accent-dim: #2f6552;
-    --ready: #d8a24a;
+    color-scheme: light dark;
+    --bg: #f6f6f6;
+    --surface: #ffffff;
+    --surface-2: #eceff4;
+    --line: #dde1e9;
+    --ink: #14161c;
+    --ink-dim: #5b6472;
+    --ink-faint: #959595;
+    --accent: #e83a34;
+    --accent-dim: #c02b26;
+    --accent-bg: rgba(232, 58, 52, 0.10);
+    --on-accent: #ffffff;
+    --brand: #263978;
+    --ready: #236978;
+    --ready-bg: rgba(35, 105, 120, 0.10);
+    --ready-line: rgba(35, 105, 120, 0.32);
+    --shadow: 0 1px 3px rgba(38, 57, 120, 0.09);
     --radius: 14px;
     --tap: 46px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1524;
+      --surface: #172033;
+      --surface-2: #212d45;
+      --line: #2d3a56;
+      --ink: #eef2f8;
+      --ink-dim: #99a4bb;
+      --ink-faint: #6b7794;
+      --accent: #f2544c;
+      --accent-dim: #b8302a;
+      --accent-bg: rgba(242, 84, 76, 0.14);
+      --on-accent: #ffffff;
+      --brand: #8ea3e0;
+      --ready: #32dad4;
+      --ready-bg: rgba(50, 218, 212, 0.12);
+      --ready-line: rgba(50, 218, 212, 0.34);
+      --shadow: none;
+    }
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
@@ -56,6 +89,7 @@
   .card {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
+    box-shadow: var(--shadow);
   }
   .card-head {
     display: flex; align-items: center; gap: 12px;
@@ -100,21 +134,21 @@
     background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
     border-radius: 10px; font-size: 18px; font-weight: 600; font-family: inherit;
   }
-  .set-box input:focus { outline: none; border-color: var(--accent-dim); }
+  .set-box input:focus { outline: none; border-color: var(--brand); }
 
   .note-input {
     width: 100%; margin-top: 12px; background: var(--surface-2);
     border: 1px solid var(--line); color: var(--ink); border-radius: 10px;
     padding: 11px 12px; font-size: 14px; font-family: inherit; resize: none;
   }
-  .note-input:focus { outline: none; border-color: var(--accent-dim); }
+  .note-input:focus { outline: none; border-color: var(--brand); }
   .note-input::placeholder { color: var(--ink-faint); }
 
   .hint {
     margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
     line-height: 1.45; display: none;
   }
-  .hint.ready { display: block; background: rgba(216,162,74,0.12); border: 1px solid rgba(216,162,74,0.3); color: var(--ready); }
+  .hint.ready { display: block; background: var(--ready-bg); border: 1px solid var(--ready-line); color: var(--ready); }
   .hint.hold { display: block; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-dim); }
 
   .save-bar {
@@ -127,7 +161,7 @@
     flex: 1; height: 50px; border-radius: 12px; font-size: 15px; font-weight: 600;
     font-family: inherit; cursor: pointer; border: none;
   }
-  .btn-save { background: var(--accent); color: #06120d; }
+  .btn-save { background: var(--accent); color: var(--on-accent); }
   .btn-save:active { background: var(--accent-dim); }
   .btn-save.done { background: var(--accent-dim); color: var(--ink); }
 
@@ -147,8 +181,8 @@
     padding: 0 10px; font-size: 14px; font-family: inherit;
   }
   .fineprint { font-size: 11px; color: var(--ink-faint); line-height: 1.55; margin: 16px 0 0; }
-  .card.warn { border-color: rgba(216,162,74,0.45); }
-  .card.warn .num { background: rgba(216,162,74,0.15); color: var(--ready); }
+  .card.warn { border-color: var(--ready-line); }
+  .card.warn .num { background: var(--ready-bg); color: var(--ready); }
   .dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
     background: var(--ready); margin-right: 5px; vertical-align: 1px;
@@ -163,11 +197,11 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* Cardio */
-  .cardio-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .cardio-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
   .cardio-head { display: flex; align-items: center; gap: 12px; padding: 14px 15px; }
   .cardio-icon { flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; }
-  .cardio-icon.warm { background: rgba(216,162,74,0.15); }
-  .cardio-icon.cool { background: rgba(74,157,127,0.15); }
+  .cardio-icon.warm { background: var(--accent-bg); }
+  .cardio-icon.cool { background: var(--ready-bg); }
   .cardio-title { flex: 1; }
   .cardio-title .name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
   .cardio-title .meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
@@ -179,7 +213,7 @@
     background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
     border-radius: 10px; font-size: 17px; font-weight: 600; font-family: inherit;
   }
-  .cardio-fields input:focus { outline: none; border-color: var(--accent-dim); }
+  .cardio-fields input:focus { outline: none; border-color: var(--brand); }
   .cardio-fields input::placeholder { color: var(--ink-faint); font-weight: 400; }
 
   .section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; margin: 4px 2px 12px; }
@@ -192,6 +226,56 @@
   .history td:first-child { color: var(--ink-faint); }
 
   footer { text-align: center; margin-top: 28px; font-size: 11px; color: var(--ink-faint); line-height: 1.6; }
+
+  /* Umschalter Training / Auswertung */
+  .tabs { display: flex; gap: 8px; margin: 0 2px 20px; }
+  .tab {
+    flex: 1; height: 42px; border-radius: 11px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink-dim);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+  }
+  .tab.active { background: var(--surface-2); color: var(--ink); border-color: var(--brand); }
+  body.stats .save-bar { display: none; }
+  body.stats .wrap { padding-bottom: 28px; }
+
+  /* Auswertung */
+  .tiles { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tile {
+    flex: 1; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 13px 8px; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .tile .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .tile .k { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 5px; }
+
+  .cal-head { display: flex; align-items: center; gap: 10px; padding: 14px 15px 4px; }
+  .cal-head .m { flex: 1; text-align: center; font-size: 15px; font-weight: 600; }
+  .cal-nav {
+    width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+    font-size: 16px; font-family: inherit;
+  }
+  .cal-nav:active { background: var(--line); }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 8px 15px 4px; }
+  .cal .dow { font-size: 10px; color: var(--ink-faint); text-align: center; padding-bottom: 2px; }
+  .cal .d {
+    aspect-ratio: 1; display: grid; place-items: center;
+    border-radius: 9px; font-size: 13px; color: var(--ink-dim); background: var(--surface-2);
+  }
+  .cal .d.blank { background: none; }
+  .cal .d.hit { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+  .cal .d.today { box-shadow: inset 0 0 0 1px var(--ink-dim); }
+  .cal .d.hit.today { box-shadow: inset 0 0 0 2px var(--ink); }
+
+  .stat-row { display: flex; align-items: baseline; gap: 8px; padding: 14px 15px 0; }
+  .stat-row .name { flex: 1; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .stat-row .delta { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+  .stat-row .delta.flat { color: var(--ink-faint); }
+  .stat-row .delta.due { color: var(--ready); }
+  .chart { padding: 8px 12px 0; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .legend { font-size: 11px; color: var(--ink-faint); line-height: 1.5; padding: 8px 15px 14px; }
+  .empty-note { font-size: 13px; color: var(--ink-dim); padding: 16px 15px; }
 </style>
 </head>
 <body>
@@ -200,11 +284,18 @@
     <div class="kicker">8-Wochen-Basis</div>
     <h1>Krafttraining</h1>
     <div class="sub">Steigern (+2,5&nbsp;kg): erst wenn alle drei Sätze saubere 12 sind. Technik schlägt Gewicht.</div>
-    <div class="date-row">
-      <span>Datum</span>
-      <input type="date" id="sessionDate">
-    </div>
   </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="train">Training</button>
+    <button class="tab" data-view="stats">Auswertung</button>
+  </div>
+
+  <div id="viewTrain">
+  <div class="date-row">
+    <span>Datum</span>
+    <input type="date" id="sessionDate">
+  </div>
 
   <div class="section-label">Warm-up</div>
   <div class="cardio-card">
@@ -286,6 +377,27 @@
     Daten liegen nur auf diesem Gerät — regelmäßig Backup speichern.<br>
     Warm-up: 10 Min Crosstrainer · danach Faszien-Block
   </footer>
+  </div><!-- /viewTrain -->
+
+  <div id="viewStats" hidden>
+    <div class="tiles" id="statTiles"></div>
+
+    <div class="card">
+      <div class="cal-head">
+        <button class="cal-nav" id="calPrev" aria-label="Monat zurück">‹</button>
+        <div class="m" id="calMonth">—</div>
+        <button class="cal-nav" id="calNext" aria-label="Monat vor">›</button>
+      </div>
+      <div class="cal" id="calGrid"></div>
+      <div class="legend" id="calSummary"></div>
+    </div>
+
+    <div class="section-label" style="margin-top:22px;">Gewicht &amp; Wiederholungen</div>
+    <div id="progressCards"></div>
+
+    <div class="section-label" style="margin-top:22px;">Cardio</div>
+    <div id="cardioCard"></div>
+  </div>
 </div>
 
 <div class="save-bar">
@@ -862,6 +974,228 @@ function checkMirror() {
     h.textContent = `Im Gerätespeicher liegt eine Kopie mit ${mirror.sessions.length} Trainings, geladen sind ${data.sessions.length}. Unten unter Schnappschüsse wiederherstellbar.`;
   });
 }
+
+// ---- Auswertung ----
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DOW = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+// Datum als lokale Mittagszeit lesen — so verrutscht nichts durch Zeitzonen
+function dayDate(iso) { return new Date(iso + 'T12:00:00'); }
+function daysBetween(isoA, isoB) { return Math.round((dayDate(isoB) - dayDate(isoA)) / 86400000); }
+function sortedSessions() { return data.sessions.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)); }
+function trainingDays(sess) { return [...new Set(sess.map(s => s.date))].sort(); }
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+let calCursor = null;
+
+function renderStats() {
+  const sess = sortedSessions();
+  const days = trainingDays(sess);
+
+  // Kennzahlen
+  const nowMonth = `${new Date().getFullYear()}-${pad2(new Date().getMonth() + 1)}`;
+  const thisMonth = days.filter(d => d.startsWith(nowMonth)).length;
+  const today = todayISO();
+  const last28 = days.filter(d => daysBetween(d, today) <= 28 && daysBetween(d, today) >= 0).length;
+  document.getElementById('statTiles').innerHTML = `
+    <div class="tile"><div class="v">${sess.length}</div><div class="k">Trainings</div></div>
+    <div class="tile"><div class="v">${thisMonth}</div><div class="k">Diesen Monat</div></div>
+    <div class="tile"><div class="v">${fmt(Math.round(last28 / 4 * 10) / 10)}</div><div class="k">Ø pro Woche</div></div>`;
+
+  if (!calCursor) {
+    const ref = days.length ? dayDate(days[days.length - 1]) : new Date();
+    calCursor = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  }
+  renderCalendar(days);
+  renderProgress(sess);
+  renderCardio(sess);
+}
+
+function renderCalendar(days) {
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const hits = new Set(days);
+  const offset = (new Date(y, m, 1).getDay() + 6) % 7;   // Woche beginnt Montag
+  const dim = new Date(y, m + 1, 0).getDate();
+  const today = todayISO();
+
+  let cells = DOW.map(d => `<div class="dow">${d}</div>`).join('');
+  for (let i = 0; i < offset; i++) cells += '<div class="d blank"></div>';
+  for (let d = 1; d <= dim; d++) {
+    const iso = `${y}-${pad2(m + 1)}-${pad2(d)}`;
+    const cls = ['d'];
+    if (hits.has(iso)) cls.push('hit');
+    if (iso === today) cls.push('today');
+    cells += `<div class="${cls.join(' ')}">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = cells;
+  document.getElementById('calMonth').textContent = `${MONTHS[m]} ${y}`;
+
+  const monthKey = `${y}-${pad2(m + 1)}`;
+  const inMonth = days.filter(d => d.startsWith(monthKey)).length;
+  const parts = [`${inMonth} ${inMonth === 1 ? 'Training' : 'Trainings'} in diesem Monat`];
+  if (days.length) {
+    const since = daysBetween(days[days.length - 1], today);
+    parts.push(since <= 0 ? 'zuletzt heute' : since === 1 ? 'zuletzt gestern' : `zuletzt vor ${since} Tagen`);
+    let gap = 0;
+    for (let i = 1; i < days.length; i++) gap = Math.max(gap, daysBetween(days[i - 1], days[i]));
+    if (gap) parts.push(`längste Pause ${gap} Tage`);
+  }
+  document.getElementById('calSummary').textContent = parts.join(' · ');
+}
+
+// Eine Grafik je Übung: Linie = Gewicht, Balken = Wiederholungen gesamt (max 36)
+function chartSVG(points) {
+  const W = 300, H = 118, padX = 10, topPad = 10, lineH = 52, barTop = 74, barH = 30;
+  const n = points.length;
+  const ws = points.map(p => p.weight);
+  const wmin = Math.min(...ws), wmax = Math.max(...ws);
+  const span = (wmax - wmin) || 1;
+  const x = i => (n === 1 ? W / 2 : padX + i * (W - 2 * padX) / (n - 1));
+  const y = v => topPad + (1 - (v - wmin) / span) * lineH;
+
+  let s = '';
+  if (n > 1) {
+    s += `<path d="${ws.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"
+           fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  s += ws.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="var(--accent)"/>`).join('');
+
+  const slot = n > 1 ? (W - 2 * padX) / (n - 1) : W;
+  const bw = Math.max(5, Math.min(20, slot - 6));
+  s += points.map((p, i) => {
+    const h = Math.max(2, (p.reps / 36) * barH);
+    const full = p.reps >= 36;
+    return `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${(barTop + barH - h).toFixed(1)}"
+             width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2"
+             fill="${full ? 'var(--brand)' : 'var(--line)'}"/>`;
+  }).join('');
+  // Marke bei 36 Wdh = dreimal saubere 12, ab da wird gesteigert
+  s += `<line x1="0" y1="${barTop}" x2="${W - 26}" y2="${barTop}" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>`;
+  s += `<text x="${W}" y="${barTop + 3}" font-size="9" fill="var(--ink-faint)" text-anchor="end">3×12</text>`;
+  s += `<line x1="0" y1="${barTop + barH}" x2="${W}" y2="${barTop + barH}" stroke="var(--line)" stroke-width="1"/>`;
+
+  if (n > 1) {
+    s += `<text x="0" y="${H - 2}" font-size="9" fill="var(--ink-faint)">${fmtDate(points[0].date)}</text>`;
+    s += `<text x="${W}" y="${H - 2}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmtDate(points[n - 1].date)}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+
+function renderProgress(sess) {
+  const box = document.getElementById('progressCards');
+  if (!sess.length) {
+    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine gespeicherten Trainings. Nach dem ersten Speichern erscheint hier der Verlauf.</div></div>';
+    return;
+  }
+  const cards = EXERCISES.map(ex => {
+    const points = [];
+    sess.forEach(s => {
+      const e = s.entries[ex.id];
+      if (!e || e.weight == null) return;
+      const reps = [e.s1, e.s2, e.s3].filter(v => typeof v === 'number');
+      if (!reps.length) return;
+      points.push({ date: s.date, weight: e.weight, reps: reps.reduce((a, b) => a + b, 0), sets: [e.s1, e.s2, e.s3] });
+    });
+    if (!points.length) return '';
+
+    const first = points[0], last = points[points.length - 1];
+    const diff = last.weight - first.weight;
+    const due = last.sets.every(v => typeof v === 'number' && v >= 12);
+    const deltaCls = due ? 'due' : diff > 0 ? '' : 'flat';
+    const deltaTxt = due ? '+2,5 kg fällig' : diff === 0 ? '±0 kg' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} kg`;
+    const setsTxt = last.sets.map(v => (v == null ? '–' : v)).join(' / ');
+
+    return `
+      <div class="card">
+        <div class="stat-row">
+          <div class="name">${ex.name}</div>
+          <div class="delta ${deltaCls}">${deltaTxt}</div>
+        </div>
+        <div class="chart">${chartSVG(points)}</div>
+        <div class="legend">
+          Gewicht ${fmt(first.weight)} → <strong style="color:var(--ink)">${fmt(last.weight)} kg</strong>
+          · zuletzt ${setsTxt} Wdh · ${points.length} ${points.length === 1 ? 'Eintrag' : 'Einträge'}
+        </div>
+      </div>`;
+  }).join('');
+  box.innerHTML = cards || '<div class="card"><div class="empty-note">Noch keine Übungsdaten.</div></div>';
+}
+
+function renderCardio(sess) {
+  const box = document.getElementById('cardioCard');
+  const pts = sess.map(s => ({
+    date: s.date,
+    min: (s.cardio && s.cardio['cool-min']) || 0,
+    hr: s.cardio && s.cardio['cool-hr'],
+    warm: (s.cardio && s.cardio['warm-min']) || 0,
+  })).filter(p => p.min || p.warm);
+
+  if (!pts.length) {
+    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine Cardio-Daten.</div></div>';
+    return;
+  }
+
+  const W = 300, H = 96, padX = 10, top = 10, plotH = 66;
+  const goal = 60;
+  const max = Math.max(goal, ...pts.map(p => p.min));
+  const n = pts.length;
+  const slot = (W - 2 * padX) / n;
+  const bw = Math.max(6, Math.min(24, slot - 8));
+  const yOf = v => top + (1 - v / max) * plotH;
+
+  let s = pts.map((p, i) => {
+    const cx = padX + slot * i + slot / 2;
+    const yTop = yOf(p.min);
+    return `<rect x="${(cx - bw / 2).toFixed(1)}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}"
+             height="${Math.max(2, top + plotH - yTop).toFixed(1)}" rx="3" fill="var(--accent-dim)"/>`;
+  }).join('');
+  s += `<line x1="0" y1="${yOf(goal).toFixed(1)}" x2="${W}" y2="${yOf(goal).toFixed(1)}"
+         stroke="var(--ready)" stroke-width="1" stroke-dasharray="4 4" opacity="0.7"/>`;
+  s += `<text x="${W}" y="${(yOf(goal) - 4).toFixed(1)}" font-size="9" fill="var(--ready)" text-anchor="end">Ziel 60 min</text>`;
+  s += `<line x1="0" y1="${top + plotH}" x2="${W}" y2="${top + plotH}" stroke="var(--line)" stroke-width="1"/>`;
+  if (n > 1) {
+    s += `<text x="0" y="${H - 2}" font-size="9" fill="var(--ink-faint)">${fmtDate(pts[0].date)}</text>`;
+    s += `<text x="${W}" y="${H - 2}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmtDate(pts[n - 1].date)}</text>`;
+  }
+
+  const hrs = pts.map(p => p.hr).filter(v => typeof v === 'number' && v > 0);
+  const avgHr = hrs.length ? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length) : null;
+  const warms = pts.map(p => p.warm).filter(v => v > 0);
+  const avgWarm = warms.length ? Math.round(warms.reduce((a, b) => a + b, 0) / warms.length) : null;
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="stat-row">
+        <div class="name">Crosstrainer nach dem Training</div>
+        <div class="delta">${pts[pts.length - 1].min} min</div>
+      </div>
+      <div class="chart"><svg viewBox="0 0 ${W} ${H}">${s}</svg></div>
+      <div class="legend">
+        Balken: Minuten nach dem Kraftteil${avgHr ? ` · Ø Puls ${avgHr} bpm` : ''}${avgWarm ? ` · Warm-up Ø ${avgWarm} min` : ''}
+      </div>
+    </div>`;
+}
+
+document.getElementById('calPrev').addEventListener('click', () => {
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() - 1, 1);
+  renderCalendar(trainingDays(sortedSessions()));
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + 1, 1);
+  renderCalendar(trainingDays(sortedSessions()));
+});
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.getAttribute('data-view');
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+    document.getElementById('viewTrain').hidden = view !== 'train';
+    document.getElementById('viewStats').hidden = view !== 'stats';
+    document.body.classList.toggle('stats', view === 'stats');
+    if (view === 'stats') renderStats();
+    window.scrollTo(0, 0);
+  });
+});
 
 // erste Karte offen zeigen
 if (container.firstElementChild) container.firstElementChild.classList.add('open');
