@@ -1,5 +1,7 @@
 # fit@cosmo — Trainings-Tracker
 
+**Live: <https://mjoon83.github.io/fit-cosmo/>**
+
 Kleine Web-App zum Tracken des 8-Wochen-Basisplans (Krafttraining an Geräten,
 doppelte Progression, plus Warm-up- und Cardio-Block).
 
