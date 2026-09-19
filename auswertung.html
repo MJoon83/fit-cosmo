@@ -105,7 +105,10 @@
      Querformat, kräftige Farben statt Grau, und die Trainingstage werden
      nicht über den Hintergrund markiert, sondern über Rahmen und Fettschrift:
      Hintergrundfarben lassen viele Drucker und PDF-Ausgaben weg. */
-  @page { size: A4 landscape; margin: 12mm; }
+  /* Hochformat: mit der Nebeneinander-Anordnung im Druck braucht der Bericht
+     4 statt 8 Seiten. Safari ignoriert die size-Angabe ohnehin und druckt
+     hochkant - so stimmt das Ergebnis in jedem Browser ueberein. */
+  @page { size: A4; margin: 12mm; }
 
   @media print {
     :root {
@@ -126,7 +129,7 @@
     .tile { padding: 10px 6px; }
     .tile .v { font-size: 19px; }
 
-    .months { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .months { gap: 8px; }
     .month { padding: 8px; }
     .month .mh { font-size: 11px; margin-bottom: 6px; }
     .cal { gap: 2px; }
@@ -135,8 +138,30 @@
     .cal .blank { box-shadow: none; }
     .cal .hit { background: #f7d3d1; color: #000; font-weight: 800; box-shadow: inset 0 0 0 1.5px #c0261f; }
 
-    h2.sec { margin: 16px 0 8px; color: #000; }
-    .card, .month, .tile { break-inside: avoid; box-shadow: none; border-color: #aab0bb; }
+    h2.sec { margin: 16px 0 8px; color: #000; break-after: avoid; page-break-after: avoid; }
+
+    /* Safari beachtet Umbruchverbote bei Rasterkindern nicht zuverlaessig.
+       Fuer den Druck laufen die Karten deshalb im normalen Fluss. */
+    /* Uebungen im normalen Fluss (volle Breite, Kurve neben Tabelle),
+       Koerperwerte zweispaltig - sonst werden die kleinen Kurven riesig. */
+    #exercises { display: block; }
+    #exercises .card { margin-bottom: 10px; }
+    #body { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-items: start; }
+    #body .card.scroll { grid-column: 1 / -1; }
+
+    .card, .month, .tile {
+      break-inside: avoid; page-break-inside: avoid;
+      box-shadow: none; border-color: #aab0bb;
+    }
+    .exbody, .chartcol, .tablecol, table, tr { break-inside: avoid; page-break-inside: avoid; }
+
+    /* Eine Druckseite ist schmaler als 760 px - ohne diese Zeilen wuerde die
+       Regel fuers schmale Fenster greifen und die Kurve auf Seitenbreite
+       aufblasen. Im Druck stehen Kurve und Tabelle immer nebeneinander. */
+    .exbody { display: flex; }
+    .chartcol { flex: 0 0 52%; align-self: flex-start; }
+    .tablecol { border-left: 1px solid #aab0bb; border-top: none; }
+    .months { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
     table { font-size: 9.5px; }
     th, td { padding: 3px 6px; }
     .legend { font-size: 9.5px; color: #2b2f36; padding-bottom: 8px; }
