@@ -139,6 +139,9 @@
     .cal .hit { background: #f7d3d1; color: #000; font-weight: 800; box-shadow: inset 0 0 0 1.5px #c0261f; }
 
     h2.sec { margin: 16px 0 8px; color: #000; break-after: avoid; page-break-after: avoid; }
+    /* Die Tabelle aller Trainings fuellt ohnehin eine Seite - sie faengt
+       deshalb oben auf einer neuen an, statt unten angeschnitten zu werden. */
+    #sessionsHead { break-before: page; page-break-before: always; margin-top: 0; }
 
     /* Safari beachtet Umbruchverbote bei Rasterkindern nicht zuverlaessig.
        Fuer den Druck laufen die Karten deshalb im normalen Fluss. */
@@ -201,7 +204,7 @@
     <div class="grid stack" id="exercises"></div>
     <h2 class="sec" id="bodyHead" hidden>Körper</h2>
     <div class="grid cols" id="body" hidden></div>
-    <h2 class="sec">Alle Trainings</h2>
+    <h2 class="sec" id="sessionsHead">Alle Trainings</h2>
     <div class="card scroll" id="sessions"></div>
     <footer id="foot"></footer>
   </div>
