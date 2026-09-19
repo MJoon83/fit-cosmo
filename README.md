@@ -12,11 +12,21 @@ liegen ausschließlich auf dem Gerät, mit dem du die App benutzt.
 
 Oben umschaltbar:
 
-- **Training** — Eingabe: Warm-up, sieben Geräte mit doppelter Progression, Cardio,
-  darunter die Karte *Daten & Sicherung*.
-- **Auswertung** — Kennzahlen, Monatskalender mit den Trainingstagen (blätterbar),
-  je Übung eine Grafik (Linie = Gewicht, Balken = Wiederholungen gesamt, gestrichelt
-  bei 36 = 3×12), Cardio-Minuten mit Ziellinie bei 60.
+- **Training** — Warm-up als Häkchen, neun Kraftübungen, Mobility-Block,
+  darunter die Karte *Daten & Sicherung*. Jede Übung wird einzeln gespeichert;
+  oben zählt ein Balken mit. Am Ende „Training abschließen“.
+- **Körper** — Gewicht, Körperfett, Muskelmasse, Viszeralfett und die vier
+  Umfänge (Brust, Hüfte, Oberarm, Oberschenkel). Leere Felder werden
+  übersprungen, mehrere Eingaben am selben Tag werden zusammengeführt.
+- **Auswertung** — Kennzahlen, Monatskalender mit den Trainingstagen,
+  je Übung Gewichtskurve und Wiederholungs-Balken.
+
+Die Notiz einer Übung ist die Merkhilfe für die Progression: sie erscheint beim
+nächsten Mal oben in der Übung. Steht dort eine Zahl („27,5“), gibt es einen
+Knopf, der das Gewicht direkt übernimmt.
+
+Die Reihenfolge der Übungen lässt sich über „Reihenfolge ändern“ anpassen und
+wird gespeichert.
 
 ## Farben
 
@@ -25,13 +35,19 @@ Petrol `#236978`, Türkis `#32dad4`. Hell- und Dunkelmodus folgen automatisch de
 iPhone-Einstellung. Bewusst **ohne** Logo, Wortmarke oder Bilder des Studios —
 Farbwerte sind frei verwendbar, die Marke nicht.
 
+## Datenschutz
+
+Persönliche Daten gehören ausschließlich in `daten/` oder in die iCloud —
+niemals ins Repository. Die `.gitignore` schließt alle Backup- und Exportdateien
+aus, unabhängig vom Ordner. **Vor jedem Push prüfen:** `git status` zeigt, was
+tatsächlich mitgeht.
+
 ## Offene Punkte
 
-- [ ] Backup `daten/training-backup-start.json` in der Homescreen-App einlesen
-      (Training vom 30.07.)
 - [ ] Auf dem iPhone prüfen, ob die Statusleiste in beiden Modi lesbar ist
-- [ ] Nach dem Icon-Wechsel: Homescreen-Icon einmal löschen und neu anlegen,
-      sonst bleibt das alte grüne Icon liegen
+- [ ] Startgewicht für Lattzug und Kettlebell-Seitheben stimmt noch nicht
+      (geraten: 30 kg bzw. 8 kg) — beim nächsten Training anpassen
+- [ ] Doppelte Einträge am 19.08. und 04.09. in den Daten aufräumen
 
 ## Dateien
 

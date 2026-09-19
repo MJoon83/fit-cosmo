@@ -15,9 +15,9 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
 <style>
   /* Farbwelt angelehnt an fit@COSMO: Rot #e83a34, Dunkelblau #263978,
-     Petrol #236978, Türkis #32dad4. Hell ist die Grundeinstellung,
+     Petrol #236978, Tuerkis #32dad4. Hell ist die Grundeinstellung,
      der Dunkelmodus greift automatisch nach iPhone-Einstellung.
-     Kein Logo, keine Schriftzüge, keine Bilder des Studios. */
+     Kein Logo, keine Schriftzuege, keine Bilder des Studios. */
   :root {
     color-scheme: light dark;
     --bg: #f6f6f6;
@@ -35,6 +35,9 @@
     --ready: #236978;
     --ready-bg: rgba(35, 105, 120, 0.10);
     --ready-line: rgba(35, 105, 120, 0.32);
+    --ok: #1f7a4d;
+    --ok-bg: rgba(31, 122, 77, 0.10);
+    --ok-line: rgba(31, 122, 77, 0.32);
     --shadow: 0 1px 3px rgba(38, 57, 120, 0.09);
     --radius: 14px;
     --tap: 46px;
@@ -56,6 +59,9 @@
       --ready: #32dad4;
       --ready-bg: rgba(50, 218, 212, 0.12);
       --ready-line: rgba(50, 218, 212, 0.34);
+      --ok: #4ecb8b;
+      --ok-bg: rgba(78, 203, 139, 0.12);
+      --ok-line: rgba(78, 203, 139, 0.34);
       --shadow: none;
     }
   }
@@ -67,9 +73,9 @@
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 80px; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 96px; }
 
-  header { padding: 8px 2px 20px; }
+  header { padding: 8px 2px 16px; }
   .kicker {
     font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--accent); font-weight: 600; margin-bottom: 6px;
@@ -77,24 +83,39 @@
   h1 { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
   .sub { color: var(--ink-dim); font-size: 13px; margin-top: 6px; line-height: 1.5; }
 
+  .tabs { display: flex; gap: 8px; margin: 0 2px 18px; }
+  .tab {
+    flex: 1; height: 42px; border-radius: 11px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink-dim);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+  }
+  .tab.active { background: var(--surface-2); color: var(--ink); border-color: var(--brand); }
+
   .date-row {
     display: flex; align-items: center; gap: 8px;
-    margin: 14px 2px 22px; font-size: 13px; color: var(--ink-dim);
+    margin: 0 2px 16px; font-size: 13px; color: var(--ink-dim);
   }
   .date-row input {
     background: var(--surface); border: 1px solid var(--line); color: var(--ink);
     border-radius: 9px; padding: 7px 10px; font-size: 14px; font-family: inherit;
   }
 
+  /* Fortschritt */
+  .progress {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px;
+  }
+  .progress .txt { font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .progress .bar { flex: 1; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .progress .fill { height: 100%; width: 0%; background: var(--ok); transition: width .3s; }
+
   .card {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius); margin-bottom: 12px; overflow: hidden;
     box-shadow: var(--shadow);
   }
-  .card-head {
-    display: flex; align-items: center; gap: 12px;
-    padding: 14px 15px; cursor: pointer; user-select: none;
-  }
+  .card-head { display: flex; align-items: center; gap: 12px; padding: 14px 15px; user-select: none; }
   .num {
     flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
     background: var(--surface-2); color: var(--ink-dim);
@@ -108,13 +129,34 @@
     background: var(--surface-2); border: 1px solid var(--line);
     padding: 5px 9px; border-radius: 8px; white-space: nowrap;
   }
-  .chev { flex-shrink: 0; color: var(--ink-faint); transition: transform .2s; font-size: 12px; }
-  .card.open .chev { transform: rotate(90deg); }
 
-  .body { display: none; padding: 4px 15px 16px; border-top: 1px solid var(--line); }
-  .card.open .body { display: block; }
-
+  .body { padding: 4px 15px 16px; border-top: 1px solid var(--line); }
   .field-label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; margin: 14px 0 8px; }
+
+  /* erledigte Uebung */
+  .card.ex.done { border-color: var(--ok-line); }
+  .card.ex.done .num { background: var(--ok-bg); color: var(--ok); }
+  .card.ex.done .body { display: none; }
+  .done-bar { display: none; align-items: center; gap: 10px; padding: 0 15px 14px; }
+  .card.ex.done .done-bar { display: flex; }
+  .done-bar .sum { flex: 1; font-size: 13px; color: var(--ok); font-weight: 600; }
+  .done-bar button {
+    flex-shrink: 0; height: 34px; padding: 0 12px; border-radius: 9px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-dim);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+  }
+
+  /* Sortiermodus */
+  .sort-btns { display: none; gap: 6px; flex-shrink: 0; }
+  .sort-btns button {
+    width: 36px; height: 36px; border-radius: 9px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+    font-size: 15px; font-family: inherit;
+  }
+  body.sorting .sort-btns { display: flex; }
+  body.sorting .card.ex .body,
+  body.sorting .card.ex .done-bar,
+  body.sorting .weight-badge { display: none; }
 
   .weight-ctrl { display: flex; align-items: center; gap: 10px; }
   .weight-ctrl button {
@@ -144,12 +186,53 @@
   .note-input:focus { outline: none; border-color: var(--brand); }
   .note-input::placeholder { color: var(--ink-faint); }
 
+  /* letzte Einheit + vorgemerkte Notiz */
+  .lastline { font-size: 12px; color: var(--ink-dim); margin-top: 12px; }
+  .lastline b { color: var(--ink); }
+  .memo {
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px;
+    background: var(--ready-bg); border: 1px solid var(--ready-line);
+    font-size: 13px; color: var(--ready); line-height: 1.4;
+  }
+  .memo.show { display: flex; }
+  .memo .txt { flex: 1; min-width: 140px; }
+  .memo button {
+    flex-shrink: 0; height: 34px; padding: 0 12px; border-radius: 9px; cursor: pointer;
+    background: var(--ready); border: none; color: #fff;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+  }
+
   .hint {
     margin-top: 12px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
     line-height: 1.45; display: none;
   }
   .hint.ready { display: block; background: var(--ready-bg); border: 1px solid var(--ready-line); color: var(--ready); }
   .hint.hold { display: block; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-dim); }
+
+  .btn-exsave {
+    width: 100%; height: var(--tap); margin-top: 14px; cursor: pointer;
+    background: var(--ok); border: none; color: #fff; border-radius: 11px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+  }
+  .btn-exsave:active { filter: brightness(0.92); }
+
+  /* Abhak-Zeilen: Warm-up und Mobility */
+  .check {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 14px 15px; cursor: pointer; background: none; border: none;
+    font-family: inherit; text-align: left; color: var(--ink);
+  }
+  .check + .check { border-top: 1px solid var(--line); }
+  .box {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+    border: 2px solid var(--line); background: var(--surface-2);
+    display: grid; place-items: center; font-size: 15px; color: transparent;
+  }
+  .check.on .box { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .check .lbl { flex: 1; font-size: 15px; font-weight: 600; }
+  .check .sub2 { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-weight: 400; }
+  .check.on .lbl { color: var(--ok); }
 
   .save-bar {
     position: fixed; left: 0; right: 0; bottom: 0;
@@ -163,7 +246,8 @@
   }
   .btn-save { background: var(--accent); color: var(--on-accent); }
   .btn-save:active { background: var(--accent-dim); }
-  .btn-save.done { background: var(--accent-dim); color: var(--ink); }
+  body.stats .save-bar, body.body-view .save-bar { display: none; }
+  body.stats .wrap, body.body-view .wrap { padding-bottom: 28px; }
 
   /* Daten & Sicherung */
   .btn-row { display: flex; gap: 8px; }
@@ -183,10 +267,7 @@
   .fineprint { font-size: 11px; color: var(--ink-faint); line-height: 1.55; margin: 16px 0 0; }
   .card.warn { border-color: var(--ready-line); }
   .card.warn .num { background: var(--ready-bg); color: var(--ready); }
-  .dot {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--ready); margin-right: 5px; vertical-align: 1px;
-  }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ready); margin-right: 5px; vertical-align: 1px; }
 
   .toast {
     position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(20px);
@@ -196,54 +277,32 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Cardio */
-  .cardio-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
-  .cardio-head { display: flex; align-items: center; gap: 12px; padding: 14px 15px; }
-  .cardio-icon { flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 15px; }
-  .cardio-icon.warm { background: var(--accent-bg); }
-  .cardio-icon.cool { background: var(--ready-bg); }
-  .cardio-title { flex: 1; }
-  .cardio-title .name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-  .cardio-title .meta { font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
-  .cardio-fields { display: flex; gap: 8px; padding: 0 15px 16px; }
-  .cardio-fields .fld { flex: 1; }
-  .cardio-fields .fld .lbl { font-size: 10px; color: var(--ink-faint); text-align: center; margin-bottom: 4px; letter-spacing: 0.05em; }
-  .cardio-fields input {
-    width: 100%; height: var(--tap); text-align: center;
-    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
-    border-radius: 10px; font-size: 17px; font-weight: 600; font-family: inherit;
-  }
-  .cardio-fields input:focus { outline: none; border-color: var(--brand); }
-  .cardio-fields input::placeholder { color: var(--ink-faint); font-weight: 400; }
-
   .section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; margin: 4px 2px 12px; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; margin: 4px 2px 12px; }
+  .section-head .section-label { margin: 0; flex: 1; }
+  .link-btn {
+    background: none; border: none; padding: 0; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 600; color: var(--accent);
+  }
 
-  .history-link { font-size: 12px; color: var(--accent); text-decoration: none; margin-top: 12px; display: inline-block; }
+  [data-toggle] { cursor: pointer; }
+  .chev { flex-shrink: 0; color: var(--ink-faint); font-size: 12px; }
+
+  .history-link { font-size: 12px; color: var(--accent); text-decoration: none; margin-top: 14px; display: inline-block; cursor: pointer; }
   .history { display: none; margin-top: 10px; font-size: 12px; color: var(--ink-dim); }
   .history.show { display: block; }
   .history table { width: 100%; border-collapse: collapse; }
-  .history td { padding: 4px 6px; border-bottom: 1px solid var(--line); }
-  .history td:first-child { color: var(--ink-faint); }
+  .history td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .history td:first-child { color: var(--ink-faint); white-space: nowrap; }
+  .history td.note { color: var(--ready); }
 
   footer { text-align: center; margin-top: 28px; font-size: 11px; color: var(--ink-faint); line-height: 1.6; }
-
-  /* Umschalter Training / Auswertung */
-  .tabs { display: flex; gap: 8px; margin: 0 2px 20px; }
-  .tab {
-    flex: 1; height: 42px; border-radius: 11px; cursor: pointer;
-    background: var(--surface); border: 1px solid var(--line); color: var(--ink-dim);
-    font-family: inherit; font-size: 14px; font-weight: 600;
-  }
-  .tab.active { background: var(--surface-2); color: var(--ink); border-color: var(--brand); }
-  body.stats .save-bar { display: none; }
-  body.stats .wrap { padding-bottom: 28px; }
 
   /* Auswertung */
   .tiles { display: flex; gap: 8px; margin-bottom: 12px; }
   .tile {
     flex: 1; background: var(--surface); border: 1px solid var(--line);
-    border-radius: var(--radius); padding: 13px 8px; text-align: center;
-    box-shadow: var(--shadow);
+    border-radius: var(--radius); padding: 13px 8px; text-align: center; box-shadow: var(--shadow);
   }
   .tile .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
   .tile .k { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 5px; }
@@ -255,7 +314,6 @@
     background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
     font-size: 16px; font-family: inherit;
   }
-  .cal-nav:active { background: var(--line); }
   .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 8px 15px 4px; }
   .cal .dow { font-size: 10px; color: var(--ink-faint); text-align: center; padding-bottom: 2px; }
   .cal .d {
@@ -272,121 +330,179 @@
   .stat-row .delta { font-size: 12px; font-weight: 600; color: var(--accent); white-space: nowrap; }
   .stat-row .delta.flat { color: var(--ink-faint); }
   .stat-row .delta.due { color: var(--ready); }
+  .stat-row .delta.good { color: var(--ok); }
+  .stat-row .delta.bad { color: var(--accent); }
   .chart { padding: 8px 12px 0; }
   .chart svg { display: block; width: 100%; height: auto; }
   .legend { font-size: 11px; color: var(--ink-faint); line-height: 1.5; padding: 8px 15px 14px; }
   .empty-note { font-size: 13px; color: var(--ink-dim); padding: 16px 15px; }
+
+  /* Koerper */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fld .lbl { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .fld input {
+    width: 100%; height: var(--tap); text-align: center;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 10px; font-size: 17px; font-weight: 600; font-family: inherit;
+  }
+  .fld input:focus { outline: none; border-color: var(--brand); }
+  .fld input::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .hlist { font-size: 12px; color: var(--ink-dim); }
+  .hlist table { width: 100%; border-collapse: collapse; }
+  .hlist th { font-size: 10px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; padding: 0 6px 6px; font-weight: 600; }
+  .hlist th:first-child { text-align: left; }
+  .hlist td { padding: 6px; border-top: 1px solid var(--line); text-align: right; }
+  .hlist td:first-child { text-align: left; color: var(--ink-faint); white-space: nowrap; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="kicker">8-Wochen-Basis</div>
+    <div class="kicker">Basisplan</div>
     <h1>Krafttraining</h1>
     <div class="sub">Steigern (+2,5&nbsp;kg): erst wenn alle drei Sätze saubere 12 sind. Technik schlägt Gewicht.</div>
   </header>
 
   <div class="tabs">
     <button class="tab active" data-view="train">Training</button>
+    <button class="tab" data-view="body">Körper</button>
     <button class="tab" data-view="stats">Auswertung</button>
   </div>
 
+  <!-- ================= TRAINING ================= -->
   <div id="viewTrain">
-  <div class="date-row">
-    <span>Datum</span>
-    <input type="date" id="sessionDate">
+    <div class="date-row">
+      <span>Datum</span>
+      <input type="date" id="sessionDate">
+    </div>
+
+    <div class="progress">
+      <div class="txt" id="progTxt">0 von 9</div>
+      <div class="bar"><div class="fill" id="progFill"></div></div>
+    </div>
+
+    <div class="section-label">Warm-up</div>
+    <div class="card">
+      <button class="check" id="warmCheck" type="button">
+        <div class="box">✓</div>
+        <div class="lbl">Crosstrainer, 10 Minuten
+          <div class="sub2">Belastung wie immer · Werte stehen in der Cardiogym-App</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="section-head" style="margin-top:22px;">
+      <div class="section-label">Krafttraining</div>
+      <button class="link-btn" id="sortToggle" type="button">Reihenfolge ändern</button>
+    </div>
+    <div id="exercises"></div>
+
+    <div class="section-label" style="margin-top:22px;">Mobility &amp; Dehnen</div>
+    <div class="card" id="mobilityCard"></div>
+    <textarea class="note-input" id="mobilityNote" rows="2" placeholder="Notiz zur Mobility, z.B. Hüfte links fester …"></textarea>
+
+    <div class="section-label" style="margin-top:22px;">Daten &amp; Sicherung</div>
+    <div class="card" id="dataCard">
+      <div class="card-head" data-toggle>
+        <div class="num">💾</div>
+        <div class="card-title">
+          <div class="name">Daten &amp; Sicherung</div>
+          <div class="meta" id="dataMeta">—</div>
+        </div>
+        <div class="chev">▶</div>
+      </div>
+      <div class="body" id="dataBody" hidden>
+        <div class="hint" id="backupHint"></div>
+        <div class="hint" id="recoverHint"></div>
+
+        <div class="field-label">Backup-Datei</div>
+        <div class="btn-row">
+          <button class="btn-sec" id="btnBackup" type="button">Backup speichern</button>
+          <button class="btn-sec" id="btnRestore" type="button">Backup laden</button>
+        </div>
+
+        <div class="field-label">Export zum Auswerten</div>
+        <div class="btn-row">
+          <button class="btn-sec" id="exportCsv" type="button">CSV</button>
+          <button class="btn-sec" id="exportMd" type="button">Markdown</button>
+        </div>
+
+        <div class="field-label">Schnappschüsse in dieser App</div>
+        <select class="sel" id="snapSelect"><option>lade …</option></select>
+        <button class="btn-sec" id="btnSnapRestore" type="button" style="margin-top:8px; width:100%;">Diesen Stand wiederherstellen</button>
+
+        <p class="fineprint">
+          Backup speichern legt eine JSON-Datei ab — auf dem iPhone über „In Dateien sichern“
+          in iCloud Drive. Auf dem MacBook liegt sie dann im selben iCloud-Ordner und lässt
+          sich dort mit „Backup laden“ einlesen. Achtung: wer zuletzt lädt, überschreibt —
+          also immer nur auf einem Gerät eintragen.
+        </p>
+        <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
+      </div>
+    </div>
+
+    <footer>
+      Daten liegen nur auf diesem Gerät — regelmäßig Backup speichern.
+    </footer>
   </div>
 
-  <div class="section-label">Warm-up</div>
-  <div class="cardio-card">
-    <div class="cardio-head">
-      <div class="cardio-icon warm">🔥</div>
-      <div class="cardio-title">
-        <div class="name">Crosstrainer – Warm-up</div>
-        <div class="meta">vor dem Kraftteil · Ziel 130–140 bpm</div>
+  <!-- ================= KÖRPER ================= -->
+  <div id="viewBody" hidden>
+    <div class="card">
+      <div class="card-head">
+        <div class="num">⚖️</div>
+        <div class="card-title">
+          <div class="name">Neue Messung</div>
+          <div class="meta" id="bodyMeta">—</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="date-row" style="margin-top:12px;">
+          <span>Datum</span>
+          <input type="date" id="bodyDate">
+        </div>
+
+        <div class="field-label">Waage &amp; Messgerät</div>
+        <div class="grid2">
+          <div class="fld"><div class="lbl">Gewicht kg</div><input id="b-weight" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Körperfett %</div><input id="b-fat" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Muskelmasse kg</div><input id="b-muscle" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Viszeralfett</div><input id="b-visceral" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+        </div>
+
+        <div class="field-label">Umfänge in cm — einmal im Monat</div>
+        <div class="grid2">
+          <div class="fld"><div class="lbl">Brust</div><input id="b-chest" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Hüfte</div><input id="b-hip" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Oberarm</div><input id="b-arm" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Oberschenkel</div><input id="b-thigh" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+        </div>
+
+        <textarea class="note-input" id="b-note" rows="2" placeholder="Notiz, z.B. morgens nüchtern gemessen …"></textarea>
+        <button class="btn-exsave" id="bodySave" type="button">Messung speichern</button>
+        <p class="fineprint">Leere Felder werden übersprungen — du kannst also nur das Gewicht
+          eintragen und die Umfänge einmal im Monat nachtragen.</p>
       </div>
     </div>
-    <div class="cardio-fields">
-      <div class="fld"><div class="lbl">MIN</div><input type="number" inputmode="numeric" id="warm-min" placeholder="10"></div>
-      <div class="fld"><div class="lbl">PULS ♥</div><input type="number" inputmode="numeric" id="warm-hr" placeholder="bpm"></div>
-      <div class="fld"><div class="lbl">WATT</div><input type="number" inputmode="numeric" id="warm-w" placeholder="W"></div>
+
+    <div class="section-label" style="margin-top:22px;">Verlauf</div>
+    <div id="bodyCharts"></div>
+    <div class="card">
+      <div class="body" style="border-top:none; padding-top:14px;">
+        <div class="hlist" id="bodyList"></div>
+      </div>
     </div>
   </div>
 
-  <div class="section-label" style="margin-top:22px;">Krafttraining</div>
-  <div id="exercises"></div>
-
-  <div class="section-label" style="margin-top:22px;">Cardio-Block</div>
-  <div class="cardio-card">
-    <div class="cardio-head">
-      <div class="cardio-icon cool">🚴</div>
-      <div class="cardio-title">
-        <div class="name">Crosstrainer – nach dem Training</div>
-        <div class="meta">langsam Richtung 60 Min · ~150 bpm</div>
-      </div>
-    </div>
-    <div class="cardio-fields">
-      <div class="fld"><div class="lbl">MIN</div><input type="number" inputmode="numeric" id="cool-min" placeholder="15"></div>
-      <div class="fld"><div class="lbl">PULS ♥</div><input type="number" inputmode="numeric" id="cool-hr" placeholder="bpm"></div>
-      <div class="fld"><div class="lbl">WATT</div><input type="number" inputmode="numeric" id="cool-w" placeholder="W"></div>
-    </div>
-  </div>
-
-  <div class="section-label" style="margin-top:22px;">Daten &amp; Sicherung</div>
-  <div class="card" id="dataCard">
-    <div class="card-head" data-toggle>
-      <div class="num">💾</div>
-      <div class="card-title">
-        <div class="name">Daten &amp; Sicherung</div>
-        <div class="meta" id="dataMeta">—</div>
-      </div>
-      <div class="chev">▶</div>
-    </div>
-    <div class="body">
-      <div class="hint" id="backupHint"></div>
-      <div class="hint" id="recoverHint"></div>
-
-      <div class="field-label">Backup-Datei</div>
-      <div class="btn-row">
-        <button class="btn-sec" id="btnBackup">Backup speichern</button>
-        <button class="btn-sec" id="btnRestore">Backup laden</button>
-      </div>
-
-      <div class="field-label">Export zum Auswerten</div>
-      <div class="btn-row">
-        <button class="btn-sec" id="exportCsv">CSV</button>
-        <button class="btn-sec" id="exportMd">Markdown</button>
-      </div>
-
-      <div class="field-label">Schnappschüsse in dieser App</div>
-      <select class="sel" id="snapSelect"><option>lade …</option></select>
-      <button class="btn-sec" id="btnSnapRestore" style="margin-top:8px; width:100%;">Diesen Stand wiederherstellen</button>
-
-      <p class="fineprint">
-        Backup speichern legt eine JSON-Datei ab — auf dem iPhone am besten über
-        „In Dateien speichern“ in iCloud Drive. Diese Datei ist die einzige Sicherung,
-        die auch ein verlorenes oder zurückgesetztes iPhone übersteht.<br><br>
-        Schnappschüsse entstehen automatisch bei jedem gespeicherten Training und
-        liegen im Speicher dieses Geräts. Gut gegen Fehleingaben, kein Ersatz für ein Backup.
-      </p>
-      <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
-    </div>
-  </div>
-
-  <footer>
-    Daten liegen nur auf diesem Gerät — regelmäßig Backup speichern.<br>
-    Warm-up: 10 Min Crosstrainer · danach Faszien-Block
-  </footer>
-  </div><!-- /viewTrain -->
-
+  <!-- ================= AUSWERTUNG ================= -->
   <div id="viewStats" hidden>
     <div class="tiles" id="statTiles"></div>
 
     <div class="card">
       <div class="cal-head">
-        <button class="cal-nav" id="calPrev" aria-label="Monat zurück">‹</button>
+        <button class="cal-nav" id="calPrev" type="button" aria-label="Monat zurück">‹</button>
         <div class="m" id="calMonth">—</div>
-        <button class="cal-nav" id="calNext" aria-label="Monat vor">›</button>
+        <button class="cal-nav" id="calNext" type="button" aria-label="Monat vor">›</button>
       </div>
       <div class="cal" id="calGrid"></div>
       <div class="legend" id="calSummary"></div>
@@ -394,44 +510,70 @@
 
     <div class="section-label" style="margin-top:22px;">Gewicht &amp; Wiederholungen</div>
     <div id="progressCards"></div>
-
-    <div class="section-label" style="margin-top:22px;">Cardio</div>
-    <div id="cardioCard"></div>
   </div>
 </div>
 
 <div class="save-bar">
-  <button class="btn-save" id="saveBtn">Training speichern</button>
+  <button class="btn-save" id="saveBtn" type="button">Training abschließen</button>
 </div>
 <div class="toast" id="toast"></div>
-
 <script>
+/* ============================================================
+   Übungen. Reihenfolge hier = Standard, änderbar über
+   "Reihenfolge ändern". step = Schrittweite der +/- Tasten.
+   ============================================================ */
 const EXERCISES = [
-  { id: 'butterfly',   name: 'Butterfly',                 meta: 'Gerät 3 · Sitz 5',            w: 17.5 },
-  { id: 'rudern',      name: 'Rudern',                    meta: 'Gerät 6 · Sitz 7, Polster 5', w: 35 },
-  { id: 'revbutterfly',name: 'Butterfly Reverse',         meta: 'Sitz 4 · Hände außen',        w: 7.5 },
-  { id: 'brustpresse', name: 'Brustpresse sitzend',       meta: 'Gerät 1 · Sitz 3',            w: 20 },
-  { id: 'beinstrecker',name: 'Beinstrecker (OS vorn)',    meta: 'Gerät 20 · Sitz 6, Polster 2',w: 22.5 },
-  { id: 'beinbeuger',  name: 'Beinbeuger (OS hinten)',    meta: 'Gerät 16 · Sitz 6, Polster 5',w: 20 },
-  { id: 'urruecken',   name: 'Unterer Rücken',            meta: 'Gerät 22',                    w: 25 },
+  { id:'rudern',       name:'Rudern',                 meta:'Gerät 6 · Sitz 7, Polster 5',   w:35, step:2.5 },
+  { id:'revbutterfly', name:'Butterfly Reverse',      meta:'Sitz 4 · Hände außen',          w:10, step:2.5 },
+  { id:'brustpresse',  name:'Brustpresse sitzend',    meta:'Gerät 1 · Sitz 3',              w:25, step:2.5 },
+  { id:'butterfly',    name:'Butterfly',              meta:'Gerät 3 · Sitz 5',              w:25, step:2.5 },
+  { id:'urruecken',    name:'Unterer Rücken',         meta:'Gerät 22 · Rolle am Rücken 2',  w:30, step:2.5 },
+  { id:'lattzug',      name:'Lattzug',                meta:'Sitz 4',                        w:30, step:2.5 },
+  { id:'beinstrecker', name:'Beinstrecker (OS vorn)', meta:'Gerät 20 · Sitz 6, Polster 2',  w:30, step:2.5 },
+  { id:'beinbeuger',   name:'Beinbeuger (OS hinten)', meta:'Gerät 16 · Sitz 6, Polster 5',  w:25, step:2.5 },
+  { id:'seitheben',    name:'Seitliches Heben',       meta:'Kettlebell · Rumpf',            w:8,  step:2 },
+];
+
+const MOBILITY = [
+  { id:'catcow',  name:'Cat-Cow' },
+  { id:'pigeon',  name:'Pigeon 90-90' },
+  { id:'dorsal',  name:'Dorsale Dehnung' },
+  { id:'hipopen', name:'Hüftbeuger öffnen', sub:'Innen- und Außenrotation' },
+  { id:'knee',    name:'Kniemobilisierung' },
+  { id:'ankle',   name:'Sprunggelenksmobilisierung' },
+];
+
+const BODY_FIELDS = [
+  { id:'weight',   el:'b-weight',   label:'Gewicht',       unit:'kg' },
+  { id:'fat',      el:'b-fat',      label:'Körperfett',    unit:'%'  },
+  { id:'muscle',   el:'b-muscle',   label:'Muskelmasse',   unit:'kg' },
+  { id:'visceral', el:'b-visceral', label:'Viszeralfett',  unit:''   },
+  { id:'chest',    el:'b-chest',    label:'Brust',         unit:'cm' },
+  { id:'hip',      el:'b-hip',      label:'Hüfte',         unit:'cm' },
+  { id:'arm',      el:'b-arm',      label:'Oberarm',       unit:'cm' },
+  { id:'thigh',    el:'b-thigh',    label:'Oberschenkel',  unit:'cm' },
 ];
 
 const STORE_KEY  = 'fitcosmo_training_v2';
 const LEGACY_KEY = 'martin_training_v1';
-const CARDIO_FIELDS = ['warm-min','warm-hr','warm-w','cool-min','cool-hr','cool-w'];
 const BACKUP_DUE_DAYS = 14;
 
-// ---------- Speicher: localStorage (sofort) + IndexedDB (Spiegel) ----------
+/* ============================================================
+   Speicher: localStorage (sofort) + IndexedDB (Spiegel)
+   ============================================================ */
 const DB_NAME = 'fitcosmo', DB_VERSION = 1, STATE_STORE = 'state', SNAP_STORE = 'snapshots';
 const MAX_SNAPSHOTS = 30;
 
-function emptyData() { return { sessions: [], current: {}, meta: {} }; }
+function emptyData() { return { sessions: [], current: {}, health: [], order: [], steps: {}, meta: {} }; }
 
 function normalize(d) {
   const base = emptyData();
   if (!d || typeof d !== 'object') return base;
   base.sessions = Array.isArray(d.sessions) ? d.sessions : [];
   base.current  = (d.current && typeof d.current === 'object') ? d.current : {};
+  base.health   = Array.isArray(d.health) ? d.health : [];
+  base.order    = Array.isArray(d.order) ? d.order : [];
+  base.steps    = (d.steps && typeof d.steps === 'object') ? d.steps : {};
   base.meta     = (d.meta && typeof d.meta === 'object') ? d.meta : {};
   return base;
 }
@@ -517,14 +659,8 @@ function idbDelete(store, key) {
   })).catch(() => false);
 }
 
-// Schnappschuss anlegen und alte über MAX_SNAPSHOTS hinaus wegräumen
 function snapshot(reason) {
-  const rec = {
-    ts: new Date().toISOString(),
-    reason: reason,
-    count: data.sessions.length,
-    json: JSON.stringify(data),
-  };
+  const rec = { ts: new Date().toISOString(), reason: reason, count: data.sessions.length, json: JSON.stringify(data) };
   return idbPut(SNAP_STORE, rec)
     .then(() => idbAll(SNAP_STORE))
     .then(all => {
@@ -534,181 +670,24 @@ function snapshot(reason) {
     .catch(() => {});
 }
 
-// letztes gespeichertes Gewicht je Übung finden, sonst Startwert
-function lastWeight(id, fallback) {
-  for (let i = data.sessions.length - 1; i >= 0; i--) {
-    const e = data.sessions[i].entries[id];
-    if (e && e.weight != null) return e.weight;
-  }
-  return fallback;
+/* ============================================================
+   Kleine Helfer
+   ============================================================ */
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function fmt(n) { return (Math.round(n * 100) / 100).toString().replace('.', ','); }
+function fmtDate(iso) { const p = String(iso).split('-'); return `${p[2]}.${p[1]}.`; }
+function num(v) { return v == null || v === '' ? null : v; }
 
-function todayISO() { return new Date().toISOString().slice(0, 10); }
-document.getElementById('sessionDate').value = todayISO();
-
-const container = document.getElementById('exercises');
-
-// Gewichte als echte Zahlen halten. Nicht aus der Anzeige zurücklesen —
-// die ist deutsch formatiert ("17,5") und parseFloat macht daraus 17.
-const weights = {};
-
-EXERCISES.forEach((ex, idx) => {
-  const startW = lastWeight(ex.id, ex.w);
-  const cur = data.current[ex.id] || {};
-  const w = cur.weight != null ? cur.weight : startW;
-  weights[ex.id] = w;
-
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-    <div class="card-head" data-toggle>
-      <div class="num">${idx + 1}</div>
-      <div class="card-title">
-        <div class="name">${ex.name}</div>
-        <div class="meta">${ex.meta}</div>
-      </div>
-      <div class="weight-badge" id="badge-${ex.id}">${fmt(w)} kg</div>
-      <div class="chev">▶</div>
-    </div>
-    <div class="body">
-      <div class="field-label">Gewicht</div>
-      <div class="weight-ctrl">
-        <button data-w="minus" data-id="${ex.id}">−</button>
-        <div class="weight-val"><span id="wval-${ex.id}">${fmt(w)}</span><span>kg</span></div>
-        <button data-w="plus" data-id="${ex.id}">+</button>
-      </div>
-      <div class="field-label">Wiederholungen pro Satz</div>
-      <div class="sets">
-        ${[1,2,3].map(s => `
-          <div class="set-box">
-            <div class="lbl">Satz ${s}</div>
-            <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="30"
-                   id="s${s}-${ex.id}" value="${cur['s'+s] != null ? cur['s'+s] : ''}">
-          </div>`).join('')}
-      </div>
-      <div class="hint" id="hint-${ex.id}"></div>
-      <textarea class="note-input" rows="2" id="note-${ex.id}"
-                placeholder="Notiz (z.B. rechte Seite, Technik) …">${cur.note || ''}</textarea>
-      <a class="history-link" data-history="${ex.id}">Verlauf anzeigen ›</a>
-      <div class="history" id="hist-${ex.id}"></div>
-    </div>
-  `;
-  container.appendChild(card);
-});
-
-// aufklappen (auch für die Karte "Daten & Sicherung", die außerhalb von #exercises liegt)
-document.addEventListener('click', e => {
-  const head = e.target.closest('[data-toggle]');
-  if (head) { head.parentElement.classList.toggle('open'); }
-  const hist = e.target.closest('[data-history]');
-  if (hist) { toggleHistory(hist.getAttribute('data-history')); }
-});
-
-// gewicht +/-
-container.addEventListener('click', e => {
-  const btn = e.target.closest('[data-w]');
-  if (!btn) return;
-  const id = btn.getAttribute('data-id');
-  const dir = btn.getAttribute('data-w') === 'plus' ? 2.5 : -2.5;
-  let v = (weights[id] != null ? weights[id] : 0) + dir;
-  if (v < 0) v = 0;
-  weights[id] = v;
-  document.getElementById('wval-' + id).textContent = fmt(v);
-  document.getElementById('badge-' + id).textContent = fmt(v) + ' kg';
-  stashCurrent(id);
-});
-
-// eingaben merken (live) + hinweis
-container.addEventListener('input', e => {
-  const t = e.target;
-  const m = t.id.match(/-(.+)$/);
-  if (!m) return;
-  const id = m[1];
-  stashCurrent(id);
-  updateHint(id);
-});
-
-function stashCurrent(id) {
-  const c = data.current[id] || {};
-  if (weights[id] != null) c.weight = weights[id];
-  [1,2,3].forEach(s => {
-    const el = document.getElementById('s'+s+'-'+id);
-    if (el) c['s'+s] = el.value === '' ? null : parseInt(el.value, 10);
-  });
-  const note = document.getElementById('note-'+id);
-  if (note) c.note = note.value;
-  data.current[id] = c;
-  save();
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1900);
 }
-
-function updateHint(id) {
-  const c = data.current[id] || {};
-  const hint = document.getElementById('hint-' + id);
-  const s = [c.s1, c.s2, c.s3];
-  const allFilled = s.every(v => typeof v === 'number' && !isNaN(v));
-  if (!allFilled) { hint.className = 'hint'; hint.textContent = ''; return; }
-  if (s.every(v => v >= 12)) {
-    hint.className = 'hint ready';
-    hint.textContent = 'Alle Sätze bei 12 — nächstes Mal +2,5 kg. Nur wenn die Technik sauber war.';
-  } else {
-    const min = Math.min(...s);
-    hint.className = 'hint hold';
-    hint.textContent = `Gewicht halten, bis alle drei Sätze 12 schaffen (aktuell min. ${min}).`;
-  }
-}
-
-function toggleHistory(id) {
-  const box = document.getElementById('hist-' + id);
-  box.classList.toggle('show');
-  if (!box.classList.contains('show')) return;
-  const rows = [];
-  data.sessions.forEach(sess => {
-    const e = sess.entries[id];
-    if (e && (e.s1 != null || e.weight != null)) {
-      const reps = [e.s1, e.s2, e.s3].map(x => x == null ? '–' : x).join(' / ');
-      rows.push(`<tr><td>${fmtDate(sess.date)}</td><td>${fmt(e.weight)} kg</td><td>${reps}</td></tr>`);
-    }
-  });
-  box.innerHTML = rows.length
-    ? `<table>${rows.reverse().join('')}</table>`
-    : 'Noch keine gespeicherten Einträge.';
-}
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-  const date = document.getElementById('sessionDate').value || todayISO();
-  const entries = {};
-  let any = false;
-  EXERCISES.forEach(ex => {
-    stashCurrent(ex.id);
-    const c = data.current[ex.id] || {};
-    if (c.s1 != null || c.s2 != null || c.s3 != null) any = true;
-    entries[ex.id] = {
-      weight: c.weight,
-      s1: c.s1 ?? null, s2: c.s2 ?? null, s3: c.s3 ?? null,
-      note: c.note || ''
-    };
-  });
-  stashCardio();
-  const cardio = data.current.cardio || {};
-  const cardioAny = CARDIO_FIELDS.some(f => cardio[f] != null);
-  if (!any && !cardioAny) { toast('Noch nichts eingetragen'); return; }
-  data.sessions.push({ date, entries, cardio });
-  data.current = {};
-  save();
-  toast('Training gespeichert ✓');
-  // vor dem Neuladen sicher wegschreiben: Spiegel + Schnappschuss
-  clearTimeout(mirrorTimer);
-  const written = Promise.all([
-    idbPut(STATE_STORE, JSON.stringify(data), 'state'),
-    snapshot('Training gespeichert'),
-  ]);
-  Promise.race([written, new Promise(r => setTimeout(r, 1500))])
-    .then(() => setTimeout(() => location.reload(), 500));
-});
-
-// ---- Export ----
-const EX_NAMES = {};
-EXERCISES.forEach(ex => EX_NAMES[ex.id] = ex.name);
 
 function downloadFile(name, text, mime) {
   const blob = new Blob([text], { type: mime });
@@ -720,94 +699,633 @@ function downloadFile(name, text, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* Reihenfolge: gespeicherte zuerst, neue Übungen hinten anhängen */
+function exerciseIds() {
+  const all = EXERCISES.map(e => e.id);
+  const saved = data.order.filter(id => all.includes(id));
+  return saved.concat(all.filter(id => !saved.includes(id)));
+}
+const EX_BY_ID = {};
+EXERCISES.forEach(e => EX_BY_ID[e.id] = e);
+function orderedExercises() { return exerciseIds().map(id => EX_BY_ID[id]); }
+function stepOf(id) {
+  const s = data.steps[id];
+  return typeof s === 'number' && s > 0 ? s : (EX_BY_ID[id] ? EX_BY_ID[id].step : 2.5);
+}
+
+/* letzte gespeicherte Einheit einer Übung finden */
+function lastEntry(id) {
+  const sorted = data.sessions.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    const e = sorted[i].entries && sorted[i].entries[id];
+    if (e && (e.weight != null || e.s1 != null)) return { date: sorted[i].date, entry: e };
+  }
+  return null;
+}
+
+/* ============================================================
+   Trainingsansicht
+   ============================================================ */
+const container = document.getElementById('exercises');
+const weights = {};   // Gewichte als echte Zahlen halten, nie aus der Anzeige zurücklesen
+
+document.getElementById('sessionDate').value = todayISO();
+
+function cur(id) {
+  if (!data.current[id] || typeof data.current[id] !== 'object') data.current[id] = {};
+  return data.current[id];
+}
+
+function renderExercises() {
+  container.innerHTML = '';
+  orderedExercises().forEach((ex, idx) => {
+    const c = cur(ex.id);
+    const last = lastEntry(ex.id);
+    const startW = last ? last.entry.weight : ex.w;
+    const w = c.weight != null ? c.weight : (startW != null ? startW : ex.w);
+    weights[ex.id] = w;
+
+    const card = document.createElement('div');
+    card.className = 'card ex' + (c.done ? ' done' : '');
+    card.id = 'card-' + ex.id;
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="num">${c.done ? '✓' : idx + 1}</div>
+        <div class="card-title">
+          <div class="name">${ex.name}</div>
+          <div class="meta">${ex.meta}</div>
+        </div>
+        <div class="weight-badge" id="badge-${ex.id}">${fmt(w)} kg</div>
+        <div class="sort-btns">
+          <button type="button" data-move="up" data-id="${ex.id}">↑</button>
+          <button type="button" data-move="down" data-id="${ex.id}">↓</button>
+        </div>
+      </div>
+      <div class="done-bar">
+        <div class="sum" id="sum-${ex.id}"></div>
+        <button type="button" data-edit="${ex.id}">Ändern</button>
+      </div>
+      <div class="body">
+        <div class="lastline" id="last-${ex.id}"></div>
+        <div class="memo" id="memo-${ex.id}"></div>
+
+        <div class="field-label">Gewicht</div>
+        <div class="weight-ctrl">
+          <button type="button" data-w="minus" data-id="${ex.id}">−</button>
+          <div class="weight-val"><span id="wval-${ex.id}">${fmt(w)}</span><span>kg</span></div>
+          <button type="button" data-w="plus" data-id="${ex.id}">+</button>
+        </div>
+
+        <div class="field-label">Wiederholungen pro Satz</div>
+        <div class="sets">
+          ${[1,2,3].map(s => `
+            <div class="set-box">
+              <div class="lbl">Satz ${s}</div>
+              <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="50"
+                     id="s${s}-${ex.id}" value="${c['s'+s] != null ? c['s'+s] : ''}">
+            </div>`).join('')}
+        </div>
+
+        <div class="hint" id="hint-${ex.id}"></div>
+
+        <textarea class="note-input" rows="2" id="note-${ex.id}"
+                  placeholder="Fürs nächste Mal, z.B. 27,5 oder „nochmal“ …">${c.note || ''}</textarea>
+
+        <button class="btn-exsave" type="button" data-save="${ex.id}">Übung speichern</button>
+
+        <a class="history-link" data-history="${ex.id}">Verlauf anzeigen ›</a>
+        <div class="history" id="hist-${ex.id}"></div>
+      </div>
+    `;
+    container.appendChild(card);
+    renderLastLine(ex.id);
+    renderMemo(ex.id);
+    updateHint(ex.id);
+    renderSummary(ex.id);
+  });
+  updateProgress();
+}
+
+function renderLastLine(id) {
+  const el = document.getElementById('last-' + id);
+  if (!el) return;
+  const last = lastEntry(id);
+  if (!last) { el.textContent = 'Erste Einheit mit dieser Übung.'; return; }
+  const e = last.entry;
+  const reps = [e.s1, e.s2, e.s3].map(v => (v == null ? '–' : v)).join(' / ');
+  el.innerHTML = `Zuletzt am ${fmtDate(last.date)} <b>${e.weight == null ? '?' : fmt(e.weight)} kg</b> · ${reps}`;
+}
+
+/* Notiz der letzten Einheit sichtbar machen — dort steht die Progression */
+function renderMemo(id) {
+  const box = document.getElementById('memo-' + id);
+  if (!box) return;
+  const last = lastEntry(id);
+  const note = last && last.entry.note ? String(last.entry.note).trim() : '';
+  if (!note) { box.className = 'memo'; box.innerHTML = ''; return; }
+
+  const m = note.replace(',', '.').match(/^(\d+(?:\.\d+)?)\s*(kg)?$/i);
+  const target = m ? parseFloat(m[1]) : null;
+  box.className = 'memo show';
+  box.innerHTML = `
+    <div class="txt">Vorgemerkt am ${fmtDate(last.date)}: <strong>${note}</strong></div>
+    ${target != null ? `<button type="button" data-apply="${id}" data-target="${target}">auf ${fmt(target)} kg</button>` : ''}
+  `;
+}
+
+function setWeight(id, v) {
+  if (v < 0) v = 0;
+  weights[id] = v;
+  const wv = document.getElementById('wval-' + id);
+  const bd = document.getElementById('badge-' + id);
+  if (wv) wv.textContent = fmt(v);
+  if (bd) bd.textContent = fmt(v) + ' kg';
+  stashCurrent(id);
+}
+
+function stashCurrent(id) {
+  const c = cur(id);
+  if (weights[id] != null) c.weight = weights[id];
+  [1,2,3].forEach(s => {
+    const el = document.getElementById('s' + s + '-' + id);
+    if (el) c['s'+s] = el.value === '' ? null : parseInt(el.value, 10);
+  });
+  const note = document.getElementById('note-' + id);
+  if (note) c.note = note.value;
+  save();
+}
+
+function updateHint(id) {
+  const c = cur(id);
+  const hint = document.getElementById('hint-' + id);
+  if (!hint) return;
+  const s = [c.s1, c.s2, c.s3];
+  const allFilled = s.every(v => typeof v === 'number' && !isNaN(v));
+  if (!allFilled) { hint.className = 'hint'; hint.textContent = ''; return; }
+  if (s.every(v => v >= 12)) {
+    hint.className = 'hint ready';
+    hint.textContent = `Alle Sätze bei 12 — nächstes Mal +${fmt(stepOf(id))} kg. Nur wenn die Technik sauber war.`;
+  } else {
+    hint.className = 'hint hold';
+    hint.textContent = `Gewicht halten, bis alle drei Sätze 12 schaffen (aktuell min. ${Math.min.apply(null, s)}).`;
+  }
+}
+
+function renderSummary(id) {
+  const el = document.getElementById('sum-' + id);
+  if (!el) return;
+  const c = cur(id);
+  const reps = [c.s1, c.s2, c.s3].map(v => (v == null ? '–' : v)).join(' / ');
+  el.textContent = `${fmt(weights[id] != null ? weights[id] : 0)} kg · ${reps}`;
+}
+
+function markDone(id, done) {
+  const c = cur(id);
+  c.done = !!done;
+  save();
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.classList.toggle('done', !!done);
+    const numEl = card.querySelector('.num');
+    if (numEl) numEl.textContent = done ? '✓' : (exerciseIds().indexOf(id) + 1);
+  }
+  renderSummary(id);
+  updateProgress();
+}
+
+function updateProgress() {
+  const ids = exerciseIds();
+  const done = ids.filter(id => data.current[id] && data.current[id].done).length;
+  document.getElementById('progTxt').textContent = `${done} von ${ids.length} Übungen`;
+  document.getElementById('progFill').style.width = (ids.length ? (done / ids.length) * 100 : 0) + '%';
+}
+
+/* nach dem Speichern zur nächsten offenen Übung springen */
+function scrollToNextOpen(afterId) {
+  const ids = exerciseIds();
+  const start = ids.indexOf(afterId);
+  for (let k = 1; k <= ids.length; k++) {
+    const id = ids[(start + k) % ids.length];
+    if (!(data.current[id] && data.current[id].done)) {
+      const card = document.getElementById('card-' + id);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+  }
+}
+
+function toggleHistory(id) {
+  const box = document.getElementById('hist-' + id);
+  box.classList.toggle('show');
+  if (!box.classList.contains('show')) return;
+  const rows = [];
+  data.sessions.slice().sort((a, b) => (a.date < b.date ? -1 : 1)).forEach(sess => {
+    const e = sess.entries && sess.entries[id];
+    if (e && (e.s1 != null || e.weight != null)) {
+      const reps = [e.s1, e.s2, e.s3].map(x => (x == null ? '–' : x)).join(' / ');
+      const note = e.note ? String(e.note).trim() : '';
+      rows.push(`<tr><td>${fmtDate(sess.date)}</td><td>${e.weight == null ? '' : fmt(e.weight)} kg</td><td>${reps}</td><td class="note">${note}</td></tr>`);
+    }
+  });
+  box.innerHTML = rows.length ? `<table>${rows.reverse().join('')}</table>` : 'Noch keine gespeicherten Einträge.';
+}
+
+/* ---- Ereignisse im Übungsbereich ---- */
+container.addEventListener('click', e => {
+  const wBtn = e.target.closest('[data-w]');
+  if (wBtn) {
+    const id = wBtn.getAttribute('data-id');
+    const dir = wBtn.getAttribute('data-w') === 'plus' ? stepOf(id) : -stepOf(id);
+    setWeight(id, (weights[id] != null ? weights[id] : 0) + dir);
+    return;
+  }
+  const apply = e.target.closest('[data-apply]');
+  if (apply) {
+    const id = apply.getAttribute('data-apply');
+    setWeight(id, parseFloat(apply.getAttribute('data-target')));
+    toast('Gewicht übernommen');
+    return;
+  }
+  const saveBtn = e.target.closest('[data-save]');
+  if (saveBtn) {
+    const id = saveBtn.getAttribute('data-save');
+    stashCurrent(id);
+    const c = cur(id);
+    if (c.s1 == null && c.s2 == null && c.s3 == null) { toast('Noch keine Wiederholungen eingetragen'); return; }
+    markDone(id, true);
+    toast(EX_BY_ID[id].name + ' gespeichert ✓');
+    setTimeout(() => scrollToNextOpen(id), 350);
+    return;
+  }
+  const edit = e.target.closest('[data-edit]');
+  if (edit) { markDone(edit.getAttribute('data-edit'), false); return; }
+
+  const hist = e.target.closest('[data-history]');
+  if (hist) { toggleHistory(hist.getAttribute('data-history')); return; }
+
+  const move = e.target.closest('[data-move]');
+  if (move) { moveExercise(move.getAttribute('data-id'), move.getAttribute('data-move') === 'up' ? -1 : 1); return; }
+});
+
+container.addEventListener('input', e => {
+  const t = e.target;
+  const m = t.id.match(/^(?:s[123]|note)-(.+)$/);
+  if (!m) return;
+  const id = m[1];
+  stashCurrent(id);
+  updateHint(id);
+});
+
+/* ---- Reihenfolge ändern ---- */
+function moveExercise(id, dir) {
+  const ids = exerciseIds();
+  const i = ids.indexOf(id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  ids.splice(j, 0, ids.splice(i, 1)[0]);
+  data.order = ids;
+  save();
+  renderExercises();
+  const card = document.getElementById('card-' + id);
+  if (card) card.scrollIntoView({ block: 'center' });
+}
+
+document.getElementById('sortToggle').addEventListener('click', () => {
+  const on = document.body.classList.toggle('sorting');
+  document.getElementById('sortToggle').textContent = on ? 'Fertig' : 'Reihenfolge ändern';
+  if (!on) toast('Reihenfolge gespeichert');
+});
+
+/* ============================================================
+   Warm-up (nur Häkchen) und Mobility
+   ============================================================ */
+const warmBtn = document.getElementById('warmCheck');
+function renderWarm() { warmBtn.classList.toggle('on', !!data.current.warmup); }
+warmBtn.addEventListener('click', () => {
+  data.current.warmup = !data.current.warmup;
+  save(); renderWarm();
+  toast(data.current.warmup ? 'Warm-up abgehakt ✓' : 'Warm-up zurückgesetzt');
+});
+
+const mobBox = document.getElementById('mobilityCard');
+function renderMobility() {
+  const m = data.current.mobility || {};
+  mobBox.innerHTML = MOBILITY.map(x => `
+    <button class="check ${m[x.id] ? 'on' : ''}" type="button" data-mob="${x.id}">
+      <div class="box">✓</div>
+      <div class="lbl">${x.name}${x.sub ? `<div class="sub2">${x.sub}</div>` : ''}</div>
+    </button>`).join('');
+}
+mobBox.addEventListener('click', e => {
+  const b = e.target.closest('[data-mob]');
+  if (!b) return;
+  const id = b.getAttribute('data-mob');
+  if (!data.current.mobility || typeof data.current.mobility !== 'object') data.current.mobility = {};
+  data.current.mobility[id] = !data.current.mobility[id];
+  save(); renderMobility();
+});
+
+const mobNote = document.getElementById('mobilityNote');
+mobNote.addEventListener('input', () => { data.current.mobilityNote = mobNote.value; save(); });
+
+/* ============================================================
+   Training abschließen
+   ============================================================ */
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const date = document.getElementById('sessionDate').value || todayISO();
+  const entries = {};
+  let anyStrength = false;
+
+  EXERCISES.forEach(ex => {
+    const c = data.current[ex.id];
+    if (!c || typeof c !== 'object') return;
+    if (c.s1 == null && c.s2 == null && c.s3 == null) return;
+    anyStrength = true;
+    entries[ex.id] = {
+      weight: c.weight != null ? c.weight : null,
+      s1: c.s1 != null ? c.s1 : null,
+      s2: c.s2 != null ? c.s2 : null,
+      s3: c.s3 != null ? c.s3 : null,
+      note: c.note || '',
+    };
+  });
+
+  const mobility = data.current.mobility || {};
+  const mobAny = Object.keys(mobility).some(k => mobility[k]);
+  const warm = !!data.current.warmup;
+
+  if (!anyStrength && !mobAny && !warm) { toast('Noch nichts eingetragen'); return; }
+
+  const openCount = exerciseIds().filter(id => {
+    const c = data.current[id];
+    return c && (c.s1 != null || c.s2 != null || c.s3 != null) && !c.done;
+  }).length;
+  if (openCount && !confirm(`${openCount} ${openCount === 1 ? 'Übung ist' : 'Übungen sind'} ausgefüllt, aber noch nicht gespeichert.\n\nTrotzdem abschließen? Die Werte werden mit übernommen.`)) return;
+
+  data.sessions.push({
+    date: date,
+    entries: entries,
+    warmup: warm,
+    mobility: mobility,
+    mobilityNote: data.current.mobilityNote || '',
+  });
+  data.current = {};
+  save();
+  toast('Training abgeschlossen ✓');
+
+  clearTimeout(mirrorTimer);
+  const written = Promise.all([
+    idbPut(STATE_STORE, JSON.stringify(data), 'state'),
+    snapshot('Training abgeschlossen'),
+  ]);
+  Promise.race([written, new Promise(r => setTimeout(r, 1500))])
+    .then(() => setTimeout(() => location.reload(), 500));
+});
+
+/* ============================================================
+   Körper: Gewicht, Fettmessung, Umfänge
+   ============================================================ */
+document.getElementById('bodyDate').value = todayISO();
+
+function readBodyForm() {
+  const rec = { date: document.getElementById('bodyDate').value || todayISO() };
+  let any = false;
+  BODY_FIELDS.forEach(f => {
+    const el = document.getElementById(f.el);
+    const v = el.value.trim().replace(',', '.').replace(/[^0-9.\-]/g, '');
+    const n = parseFloat(v);
+    if (v !== '' && !isNaN(n)) { rec[f.id] = Math.round(n * 100) / 100; any = true; }
+  });
+  const note = document.getElementById('b-note').value.trim();
+  if (note) rec.note = note;
+  return any ? rec : null;
+}
+
+document.getElementById('bodySave').addEventListener('click', () => {
+  const rec = readBodyForm();
+  if (!rec) { toast('Kein Wert eingetragen'); return; }
+
+  const existing = data.health.find(h => h.date === rec.date);
+  if (existing) {
+    Object.keys(rec).forEach(k => { if (k !== 'date') existing[k] = rec[k]; });
+  } else {
+    data.health.push(rec);
+  }
+  data.health.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  save();
+  snapshot('Körpermessung gespeichert');
+
+  BODY_FIELDS.forEach(f => { document.getElementById(f.el).value = ''; });
+  document.getElementById('b-note').value = '';
+  renderBody();
+  toast(existing ? 'Messung aktualisiert ✓' : 'Messung gespeichert ✓');
+});
+
+function renderBody() {
+  const h = data.health;
+  const meta = document.getElementById('bodyMeta');
+  if (!h.length) {
+    meta.textContent = 'noch keine Messung';
+  } else {
+    const l = h[h.length - 1];
+    meta.textContent = `zuletzt ${fmtDate(l.date)}${l.weight != null ? ' · ' + fmt(l.weight) + ' kg' : ''}`;
+  }
+  renderBodyCharts();
+  renderBodyList();
+}
+
+function seriesOf(key) {
+  return data.health.filter(h => typeof h[key] === 'number').map(h => ({ date: h.date, v: h[key] }));
+}
+
+/* einfache Linie, gleiche Optik wie die Übungsgrafiken */
+function lineSVG(points, color) {
+  const W = 300, H = 108, padL = 34, padR = 10, top = 10, plotH = 58;
+  const n = points.length;
+  const vs = points.map(p => p.v);
+  const mn = Math.min.apply(null, vs), mx = Math.max.apply(null, vs);
+  const span = (mx - mn) || 1;
+  const x = i => (n === 1 ? (padL + W - padR) / 2 : padL + i * (W - padL - padR) / (n - 1));
+  const y = v => top + (1 - (v - mn) / span) * plotH;
+  let s = '';
+  if (n > 1) {
+    s += `<path d="${vs.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"
+           fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  s += vs.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="${color}"/>`).join('');
+  s += `<line x1="${padL - 6}" y1="${top + plotH}" x2="${W}" y2="${top + plotH}" stroke="var(--line)" stroke-width="1"/>`;
+  s += `<text x="${padL - 10}" y="${top + 4}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmt(mx)}</text>`;
+  s += `<text x="${padL - 10}" y="${top + plotH}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmt(mn)}</text>`;
+  if (n > 1) {
+    s += `<text x="${padL - 6}" y="${H - 4}" font-size="9" fill="var(--ink-faint)">${fmtDate(points[0].date)}</text>`;
+    s += `<text x="${W}" y="${H - 4}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmtDate(points[n - 1].date)}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+
+function trendCard(key, label, unit, color, goodDown) {
+  const pts = seriesOf(key);
+  if (!pts.length) return '';
+  const first = pts[0], last = pts[pts.length - 1];
+  const d = last.v - first.v;
+  const good = goodDown ? d < 0 : d > 0;
+  const cls = d === 0 ? 'flat' : (good ? 'good' : 'bad');
+  const txt = d === 0 ? '±0' : `${d > 0 ? '+' : '−'}${fmt(Math.abs(d))} ${unit}`;
+  return `
+    <div class="card">
+      <div class="stat-row">
+        <div class="name">${label}</div>
+        <div class="delta ${cls}">${txt}</div>
+      </div>
+      <div class="chart">${lineSVG(pts, color)}</div>
+      <div class="legend">${fmt(first.v)} → <strong style="color:var(--ink)">${fmt(last.v)} ${unit}</strong>
+        · ${pts.length} ${pts.length === 1 ? 'Messung' : 'Messungen'}</div>
+    </div>`;
+}
+
+function renderBodyCharts() {
+  const box = document.getElementById('bodyCharts');
+  if (!data.health.length) {
+    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine Messung. Trag oben Gewicht ein — die Kurve entsteht ab der zweiten Messung.</div></div>';
+    return;
+  }
+  let html = '';
+  html += trendCard('weight', 'Gewicht', 'kg', 'var(--accent)', true);
+  html += trendCard('fat', 'Körperfett', '%', 'var(--ready)', true);
+  html += trendCard('muscle', 'Muskelmasse', 'kg', 'var(--ok)', false);
+
+  const circ = [['chest','Brust'],['hip','Hüfte'],['arm','Oberarm'],['thigh','Oberschenkel']];
+  const rows = circ.map(([k, label]) => {
+    const pts = seriesOf(k);
+    if (!pts.length) return '';
+    const a = pts[0].v, b = pts[pts.length - 1].v, d = b - a;
+    const txt = pts.length < 2 ? '—' : (d === 0 ? '±0 cm' : `${d > 0 ? '+' : '−'}${fmt(Math.abs(d))} cm`);
+    return `<tr><td>${label}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td style="color:${d < 0 ? 'var(--ok)' : 'var(--ink)'}">${txt}</td></tr>`;
+  }).join('');
+  if (rows) {
+    html += `
+      <div class="card">
+        <div class="stat-row"><div class="name">Umfänge</div></div>
+        <div class="body" style="border-top:none; padding-top:10px;">
+          <div class="hlist"><table>
+            <tr><th>Maß</th><th>Start</th><th>Jetzt</th><th>Δ</th></tr>
+            ${rows}
+          </table></div>
+        </div>
+      </div>`;
+  }
+  box.innerHTML = html;
+}
+
+function renderBodyList() {
+  const box = document.getElementById('bodyList');
+  if (!data.health.length) { box.innerHTML = '<div class="empty-note" style="padding:0">Noch keine Einträge.</div>'; return; }
+  const rows = data.health.slice().reverse().map(h => {
+    const head = [
+      h.weight != null ? `<b>${fmt(h.weight)} kg</b>` : '',
+      h.fat != null ? `${fmt(h.fat)} % KF` : '',
+      h.muscle != null ? `${fmt(h.muscle)} kg Muskel` : '',
+      h.visceral != null ? `Viszeral ${fmt(h.visceral)}` : '',
+    ].filter(Boolean).join(' · ');
+    const circ = [
+      h.chest != null ? `Brust ${fmt(h.chest)}` : '',
+      h.hip != null ? `Hüfte ${fmt(h.hip)}` : '',
+      h.arm != null ? `Arm ${fmt(h.arm)}` : '',
+      h.thigh != null ? `Bein ${fmt(h.thigh)}` : '',
+    ].filter(Boolean).join(' · ');
+    return `
+      <div style="padding:10px 0; border-top:1px solid var(--line);">
+        <div style="color:var(--ink); font-size:13px;">${fmtDate(h.date)}${String(h.date).slice(0,4)} &nbsp; ${head}</div>
+        ${circ ? `<div style="margin-top:3px;">${circ} cm</div>` : ''}
+        ${h.note ? `<div style="margin-top:3px; color:var(--ready);">${h.note}</div>` : ''}
+      </div>`;
+  }).join('');
+  box.innerHTML = rows;
+}
+
+/* ============================================================
+   Export
+   ============================================================ */
+function csvNum(v) { return v == null ? '' : String(v).replace('.', ','); }
+function csvSafe(s) { return String(s == null ? '' : s).replace(/[;\n\r]/g, ' '); }
+
+function sortedSessions() {
+  return data.sessions.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+}
+
 function exportCSV() {
-  if (!data.sessions.length) { toast('Keine gespeicherten Trainings'); return; }
-  const rows = [['Datum','Bereich','Uebung','Gewicht_kg','Satz1','Satz2','Satz3','Min','Puls','Watt','Notiz']];
-  data.sessions.forEach(s => {
-    EXERCISES.forEach(ex => {
-      const e = s.entries[ex.id];
+  if (!data.sessions.length && !data.health.length) { toast('Noch nichts gespeichert'); return; }
+  const rows = [['Datum','Bereich','Bezeichnung','Wert','Satz1','Satz2','Satz3','Notiz']];
+  sortedSessions().forEach(s => {
+    if (s.warmup) rows.push([s.date, 'Warm-up', 'Crosstrainer 10 Min', 'ja', '', '', '', '']);
+    exerciseIds().forEach(id => {
+      const e = s.entries && s.entries[id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        rows.push([s.date,'Kraft',ex.name,csvNum(e.weight),g(e.s1),g(e.s2),g(e.s3),'','','',csvSafe(e.note)]);
+        rows.push([s.date, 'Kraft', EX_BY_ID[id].name, csvNum(e.weight), csvNum(e.s1), csvNum(e.s2), csvNum(e.s3), csvSafe(e.note)]);
       }
     });
-    const c = s.cardio || {};
-    if (c['warm-min'] != null || c['warm-hr'] != null || c['warm-w'] != null)
-      rows.push([s.date,'Warm-up','Crosstrainer','','','','',g(c['warm-min']),g(c['warm-hr']),g(c['warm-w']),'']);
-    if (c['cool-min'] != null || c['cool-hr'] != null || c['cool-w'] != null)
-      rows.push([s.date,'Cardio','Crosstrainer','','','','',g(c['cool-min']),g(c['cool-hr']),g(c['cool-w']),'']);
+    const m = s.mobility || {};
+    MOBILITY.forEach(x => { if (m[x.id]) rows.push([s.date, 'Mobility', x.name, 'ja', '', '', '', '']); });
+    if (s.mobilityNote) rows.push([s.date, 'Mobility', 'Notiz', '', '', '', '', csvSafe(s.mobilityNote)]);
   });
-  const csv = rows.map(r => r.join(';')).join('\n');
-  downloadFile('training-export.csv', '\ufeff' + csv, 'text/csv');
+  data.health.forEach(h => {
+    BODY_FIELDS.forEach(f => {
+      if (typeof h[f.id] === 'number') rows.push([h.date, 'Körper', f.label + (f.unit ? ' (' + f.unit + ')' : ''), csvNum(h[f.id]), '', '', '', '']);
+    });
+    if (h.note) rows.push([h.date, 'Körper', 'Notiz', '', '', '', '', csvSafe(h.note)]);
+  });
+  downloadFile('training-export.csv', '﻿' + rows.map(r => r.join(';')).join('\n'), 'text/csv');
   toast('CSV exportiert ✓');
 }
 
 function exportMD() {
-  if (!data.sessions.length) { toast('Keine gespeicherten Trainings'); return; }
+  if (!data.sessions.length && !data.health.length) { toast('Noch nichts gespeichert'); return; }
   let md = '# Trainings-Verlauf\n\n';
-  data.sessions.forEach(s => {
-    md += `## ${fmtDate(s.date)}${s.date.slice(0,4)}\n\n`;
-    const c = s.cardio || {};
-    if (c['warm-min'] != null) md += `**Warm-up:** ${g(c['warm-min'])} min · ${g(c['warm-hr'])} bpm · ${g(c['warm-w'])} W\n\n`;
-    md += '| Übung | Gewicht | S1 | S2 | S3 | Notiz |\n|---|---|---|---|---|---|\n';
-    EXERCISES.forEach(ex => {
-      const e = s.entries[ex.id];
+  sortedSessions().forEach(s => {
+    md += `## ${fmtDate(s.date)}${String(s.date).slice(0, 4)}\n\n`;
+    if (s.warmup) md += '**Warm-up:** Crosstrainer 10 Min ✓\n\n';
+    const lines = [];
+    exerciseIds().forEach(id => {
+      const e = s.entries && s.entries[id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        md += `| ${ex.name} | ${e.weight == null ? '' : fmt(e.weight)} kg | ${g(e.s1)} | ${g(e.s2)} | ${g(e.s3)} | ${e.note||''} |\n`;
+        lines.push(`| ${EX_BY_ID[id].name} | ${e.weight == null ? '' : fmt(e.weight)} kg | ${e.s1 ?? ''} | ${e.s2 ?? ''} | ${e.s3 ?? ''} | ${e.note || ''} |`);
       }
     });
-    if (c['cool-min'] != null) md += `\n**Cardio:** ${g(c['cool-min'])} min · ${g(c['cool-hr'])} bpm · ${g(c['cool-w'])} W\n`;
-    md += '\n---\n\n';
+    if (lines.length) md += '| Übung | Gewicht | S1 | S2 | S3 | Notiz |\n|---|---|---|---|---|---|\n' + lines.join('\n') + '\n\n';
+    const m = s.mobility || {};
+    const done = MOBILITY.filter(x => m[x.id]).map(x => x.name);
+    if (done.length) md += `**Mobility:** ${done.join(' · ')}\n\n`;
+    if (s.mobilityNote) md += `*${s.mobilityNote}*\n\n`;
+    md += '---\n\n';
   });
+  if (data.health.length) {
+    md += '# Körper\n\n| Datum | Gewicht | Körperfett | Brust | Hüfte | Oberarm | Oberschenkel |\n|---|---|---|---|---|---|---|\n';
+    data.health.forEach(h => {
+      const c = v => (typeof v === 'number' ? fmt(v) : '');
+      md += `| ${fmtDate(h.date)}${String(h.date).slice(0,4)} | ${c(h.weight)} | ${c(h.fat)} | ${c(h.chest)} | ${c(h.hip)} | ${c(h.arm)} | ${c(h.thigh)} |\n`;
+    });
+    md += '\n';
+  }
   downloadFile('training-verlauf.md', md, 'text/markdown');
   toast('Markdown exportiert ✓');
 }
 
-function g(v){ return v == null ? '' : v; }
-// Dezimalkomma, damit deutsches Excel/Numbers 17,5 nicht als 175 liest
-function csvNum(v){ return v == null ? '' : String(v).replace('.', ','); }
-function csvSafe(s){ return (s||'').replace(/[;\n]/g,' '); }
-
 document.getElementById('exportCsv').addEventListener('click', exportCSV);
 document.getElementById('exportMd').addEventListener('click', exportMD);
 
-function fmt(n) { return (Math.round(n * 10) / 10).toString().replace('.', ','); }
-function fmtDate(iso) { const [y,m,d] = iso.split('-'); return `${d}.${m}.`; }
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1800);
-}
-
-// Cardio: gespeicherte Zwischenwerte vorbelegen
-CARDIO_FIELDS.forEach(f => {
-  const el = document.getElementById(f);
-  if (el && data.current.cardio && data.current.cardio[f] != null) el.value = data.current.cardio[f];
-  if (el) el.addEventListener('input', stashCardio);
-});
-function stashCardio() {
-  const c = {};
-  CARDIO_FIELDS.forEach(f => {
-    const el = document.getElementById(f);
-    c[f] = el && el.value !== '' ? parseInt(el.value, 10) : null;
-  });
-  data.current.cardio = c;
-  save();
-}
-
-// ---- Daten & Sicherung ----
+/* ============================================================
+   Sicherung
+   ============================================================ */
 function daysSince(iso) {
   if (!iso) return null;
   const t = new Date(iso).getTime();
   if (isNaN(t)) return null;
   return Math.floor((Date.now() - t) / 86400000);
 }
-
 function fmtStamp(iso) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '?';
-  const p = n => String(n).padStart(2, '0');
-  return `${p(d.getDate())}.${p(d.getMonth() + 1)}. ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}. ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function renderDataCard() {
@@ -819,7 +1337,7 @@ function renderDataCard() {
 
   let txt;
   if (d === null) txt = 'noch kein Backup';
-  else if (d <= 0)  txt = 'Backup von heute';
+  else if (d <= 0) txt = 'Backup von heute';
   else if (d === 1) txt = 'Backup von gestern';
   else txt = `Backup vor ${d} Tagen`;
 
@@ -832,39 +1350,31 @@ function renderDataCard() {
     hint.textContent = 'Backup fällig. Datei speichern und in iCloud Drive ablegen — das ist die einzige Sicherung, die das Gerät überlebt.';
   } else if (n === 0) {
     hint.className = 'hint hold';
-    hint.textContent = 'Noch keine gespeicherten Trainings.';
+    hint.textContent = 'Noch keine abgeschlossenen Trainings.';
   } else {
     hint.className = 'hint hold';
     hint.textContent = 'Sicherung ist aktuell.';
   }
 }
 
-function backupPayload() {
-  return JSON.stringify({
-    app: 'fit@cosmo Trainings-Tracker',
-    format: 2,
-    exportedAt: new Date().toISOString(),
-    data: { sessions: data.sessions, current: data.current, meta: data.meta },
-  }, null, 2);
-}
-
 async function saveBackup() {
+  data.meta.lastBackup = new Date().toISOString();
+  const json = JSON.stringify({
+    app: 'fit@cosmo Trainings-Tracker', format: 3,
+    exportedAt: new Date().toISOString(),
+    data: { sessions: data.sessions, current: data.current, health: data.health, order: data.order, steps: data.steps, meta: data.meta },
+  }, null, 2);
   const name = `training-backup-${todayISO()}.json`;
-  const json = backupPayload();
   let shared = false;
   try {
     if (navigator.canShare && typeof File === 'function') {
       const file = new File([json], name, { type: 'application/json' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Trainings-Backup' });
-        shared = true;
-      }
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Trainings-Backup' }); shared = true; }
     }
   } catch (err) {
-    if (err && err.name === 'AbortError') return;   // abgebrochen: nichts vermerken
+    if (err && err.name === 'AbortError') return;
   }
   if (!shared) downloadFile(name, json, 'application/json');
-  data.meta.lastBackup = new Date().toISOString();
   save();
   renderDataCard();
   toast('Backup erstellt ✓');
@@ -891,12 +1401,10 @@ document.getElementById('restoreFile').addEventListener('change', async e => {
   try { parsed = JSON.parse(await file.text()); }
   catch (err) { toast('Datei nicht lesbar'); return; }
   const incoming = normalize(parsed && parsed.data ? parsed.data : parsed);
-  if (!incoming.sessions.length && !Object.keys(incoming.current).length) {
-    toast('Keine Trainingsdaten in der Datei'); return;
-  }
+  if (!incoming.sessions.length && !incoming.health.length) { toast('Keine Daten in der Datei'); return; }
   const ok = confirm(
-    `Backup enthält ${incoming.sessions.length} Trainings.\n` +
-    `Aktuell in der App: ${data.sessions.length}.\n\n` +
+    `Backup enthält ${incoming.sessions.length} Trainings und ${incoming.health.length} Körpermessungen.\n` +
+    `Aktuell in der App: ${data.sessions.length} / ${data.health.length}.\n\n` +
     `Aktuellen Stand ersetzen?\nVorher wird automatisch ein Schnappschuss angelegt.`
   );
   if (!ok) return;
@@ -913,12 +1421,7 @@ function renderSnapshots() {
       try {
         const m = normalize(JSON.parse(mirrorJson));
         if (m.sessions.length > data.sessions.length) {
-          list.push({
-            ts: m.meta.updatedAt || new Date().toISOString(),
-            reason: 'Kopie im Gerätespeicher',
-            count: m.sessions.length,
-            json: mirrorJson,
-          });
+          list.push({ ts: m.meta.updatedAt || new Date().toISOString(), reason: 'Kopie im Gerätespeicher', count: m.sessions.length, json: mirrorJson });
         }
       } catch (err) {}
     }
@@ -936,63 +1439,57 @@ function renderSnapshots() {
 }
 
 document.getElementById('btnSnapRestore').addEventListener('click', () => {
-  const idx = parseInt(document.getElementById('snapSelect').value, 10);
-  const snap = snapList[idx];
+  const snap = snapList[parseInt(document.getElementById('snapSelect').value, 10)];
   if (!snap) return;
   let incoming;
   try { incoming = normalize(JSON.parse(snap.json)); }
   catch (err) { toast('Schnappschuss beschädigt'); return; }
-  const ok = confirm(
-    `Stand vom ${fmtStamp(snap.ts)} mit ${incoming.sessions.length} Trainings laden?\n\n` +
-    `Der aktuelle Stand (${data.sessions.length} Trainings) wird ersetzt, vorher aber als Schnappschuss gesichert.`
-  );
-  if (!ok) return;
+  if (!confirm(`Stand vom ${fmtStamp(snap.ts)} mit ${incoming.sessions.length} Trainings laden?\n\nDer aktuelle Stand wird ersetzt, vorher aber gesichert.`)) return;
   applyRestore(incoming, 'vor Rückkehr zu Schnappschuss');
 });
 
-// Falls localStorage geleert wurde, IndexedDB aber noch Daten hat: retten.
 function checkMirror() {
   idbGet(STATE_STORE, 'state').then(json => {
-    if (!json) {
-      if (data.sessions.length) idbPut(STATE_STORE, JSON.stringify(data), 'state');
-      return;
-    }
+    if (!json) { if (data.sessions.length) idbPut(STATE_STORE, JSON.stringify(data), 'state'); return; }
     let mirror;
     try { mirror = normalize(JSON.parse(json)); } catch (err) { return; }
     if (mirror.sessions.length <= data.sessions.length) return;
-
     if (data.sessions.length === 0 && !sessionStorage.getItem('fitcosmo_recovered')) {
       try { sessionStorage.setItem('fitcosmo_recovered', '1'); } catch (err) {}
-      data = mirror;
-      save();
+      data = mirror; save();
       toast('Daten aus der Sicherheitskopie wiederhergestellt');
       setTimeout(() => location.reload(), 1200);
       return;
     }
     const h = document.getElementById('recoverHint');
     h.className = 'hint ready';
-    h.textContent = `Im Gerätespeicher liegt eine Kopie mit ${mirror.sessions.length} Trainings, geladen sind ${data.sessions.length}. Unten unter Schnappschüsse wiederherstellbar.`;
+    h.textContent = `Im Gerätespeicher liegt eine Kopie mit ${mirror.sessions.length} Trainings, geladen sind ${data.sessions.length}. Unten über Schnappschüsse wiederherstellbar.`;
   });
 }
 
-// ---- Auswertung ----
+const dataHead = document.querySelector('#dataCard [data-toggle]');
+dataHead.addEventListener('click', () => {
+  const b = document.getElementById('dataBody');
+  b.hidden = !b.hidden;
+  dataHead.querySelector('.chev').textContent = b.hidden ? '▶' : '▼';
+  if (!b.hidden) renderSnapshots();
+});
+
+/* ============================================================
+   Auswertung
+   ============================================================ */
 const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const DOW = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 
-// Datum als lokale Mittagszeit lesen — so verrutscht nichts durch Zeitzonen
 function dayDate(iso) { return new Date(iso + 'T12:00:00'); }
-function daysBetween(isoA, isoB) { return Math.round((dayDate(isoB) - dayDate(isoA)) / 86400000); }
-function sortedSessions() { return data.sessions.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)); }
+function daysBetween(a, b) { return Math.round((dayDate(b) - dayDate(a)) / 86400000); }
 function trainingDays(sess) { return [...new Set(sess.map(s => s.date))].sort(); }
-function pad2(n) { return String(n).padStart(2, '0'); }
 
 let calCursor = null;
 
 function renderStats() {
   const sess = sortedSessions();
   const days = trainingDays(sess);
-
-  // Kennzahlen
   const nowMonth = `${new Date().getFullYear()}-${pad2(new Date().getMonth() + 1)}`;
   const thisMonth = days.filter(d => d.startsWith(nowMonth)).length;
   const today = todayISO();
@@ -1007,17 +1504,15 @@ function renderStats() {
     calCursor = new Date(ref.getFullYear(), ref.getMonth(), 1);
   }
   renderCalendar(days);
-  renderProgress(sess);
-  renderCardio(sess);
+  renderProgressCards(sess);
 }
 
 function renderCalendar(days) {
   const y = calCursor.getFullYear(), m = calCursor.getMonth();
   const hits = new Set(days);
-  const offset = (new Date(y, m, 1).getDay() + 6) % 7;   // Woche beginnt Montag
+  const offset = (new Date(y, m, 1).getDay() + 6) % 7;
   const dim = new Date(y, m + 1, 0).getDate();
   const today = todayISO();
-
   let cells = DOW.map(d => `<div class="dow">${d}</div>`).join('');
   for (let i = 0; i < offset; i++) cells += '<div class="d blank"></div>';
   for (let d = 1; d <= dim; d++) {
@@ -1043,37 +1538,31 @@ function renderCalendar(days) {
   document.getElementById('calSummary').textContent = parts.join(' · ');
 }
 
-// Eine Grafik je Übung: Linie = Gewicht, Balken = Wiederholungen gesamt (max 36)
 function chartSVG(points) {
   const W = 300, H = 118, padX = 10, topPad = 10, lineH = 52, barTop = 74, barH = 30;
   const n = points.length;
   const ws = points.map(p => p.weight);
-  const wmin = Math.min(...ws), wmax = Math.max(...ws);
+  const wmin = Math.min.apply(null, ws), wmax = Math.max.apply(null, ws);
   const span = (wmax - wmin) || 1;
   const x = i => (n === 1 ? W / 2 : padX + i * (W - 2 * padX) / (n - 1));
   const y = v => topPad + (1 - (v - wmin) / span) * lineH;
-
   let s = '';
   if (n > 1) {
     s += `<path d="${ws.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"
            fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   }
   s += ws.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="var(--accent)"/>`).join('');
-
   const slot = n > 1 ? (W - 2 * padX) / (n - 1) : W;
   const bw = Math.max(5, Math.min(20, slot - 6));
   s += points.map((p, i) => {
     const h = Math.max(2, (p.reps / 36) * barH);
-    const full = p.reps >= 36;
     return `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${(barTop + barH - h).toFixed(1)}"
              width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2"
-             fill="${full ? 'var(--brand)' : 'var(--line)'}"/>`;
+             fill="${p.reps >= 36 ? 'var(--brand)' : 'var(--line)'}"/>`;
   }).join('');
-  // Marke bei 36 Wdh = dreimal saubere 12, ab da wird gesteigert
   s += `<line x1="0" y1="${barTop}" x2="${W - 26}" y2="${barTop}" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>`;
   s += `<text x="${W}" y="${barTop + 3}" font-size="9" fill="var(--ink-faint)" text-anchor="end">3×12</text>`;
   s += `<line x1="0" y1="${barTop + barH}" x2="${W}" y2="${barTop + barH}" stroke="var(--line)" stroke-width="1"/>`;
-
   if (n > 1) {
     s += `<text x="0" y="${H - 2}" font-size="9" fill="var(--ink-faint)">${fmtDate(points[0].date)}</text>`;
     s += `<text x="${W}" y="${H - 2}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmtDate(points[n - 1].date)}</text>`;
@@ -1081,99 +1570,39 @@ function chartSVG(points) {
   return `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
 }
 
-function renderProgress(sess) {
+function renderProgressCards(sess) {
   const box = document.getElementById('progressCards');
   if (!sess.length) {
-    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine gespeicherten Trainings. Nach dem ersten Speichern erscheint hier der Verlauf.</div></div>';
+    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine abgeschlossenen Trainings.</div></div>';
     return;
   }
-  const cards = EXERCISES.map(ex => {
+  const cards = orderedExercises().map(ex => {
     const points = [];
     sess.forEach(s => {
-      const e = s.entries[ex.id];
+      const e = s.entries && s.entries[ex.id];
       if (!e || e.weight == null) return;
       const reps = [e.s1, e.s2, e.s3].filter(v => typeof v === 'number');
       if (!reps.length) return;
-      points.push({ date: s.date, weight: e.weight, reps: reps.reduce((a, b) => a + b, 0), sets: [e.s1, e.s2, e.s3] });
+      points.push({ date: s.date, weight: e.weight, reps: reps.reduce((a, b) => a + b, 0), sets: [e.s1, e.s2, e.s3], note: e.note || '' });
     });
     if (!points.length) return '';
-
     const first = points[0], last = points[points.length - 1];
     const diff = last.weight - first.weight;
     const due = last.sets.every(v => typeof v === 'number' && v >= 12);
-    const deltaCls = due ? 'due' : diff > 0 ? '' : 'flat';
-    const deltaTxt = due ? '+2,5 kg fällig' : diff === 0 ? '±0 kg' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} kg`;
-    const setsTxt = last.sets.map(v => (v == null ? '–' : v)).join(' / ');
-
+    const cls = due ? 'due' : diff > 0 ? '' : 'flat';
+    const deltaTxt = due ? `+${fmt(stepOf(ex.id))} kg fällig` : diff === 0 ? '±0 kg' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} kg`;
     return `
       <div class="card">
-        <div class="stat-row">
-          <div class="name">${ex.name}</div>
-          <div class="delta ${deltaCls}">${deltaTxt}</div>
-        </div>
+        <div class="stat-row"><div class="name">${ex.name}</div><div class="delta ${cls}">${deltaTxt}</div></div>
         <div class="chart">${chartSVG(points)}</div>
         <div class="legend">
           Gewicht ${fmt(first.weight)} → <strong style="color:var(--ink)">${fmt(last.weight)} kg</strong>
-          · zuletzt ${setsTxt} Wdh · ${points.length} ${points.length === 1 ? 'Eintrag' : 'Einträge'}
+          · zuletzt ${last.sets.map(v => (v == null ? '–' : v)).join(' / ')} Wdh
+          ${last.note ? ` · Notiz: <span style="color:var(--ready)">${last.note}</span>` : ''}
         </div>
       </div>`;
   }).join('');
   box.innerHTML = cards || '<div class="card"><div class="empty-note">Noch keine Übungsdaten.</div></div>';
-}
-
-function renderCardio(sess) {
-  const box = document.getElementById('cardioCard');
-  const pts = sess.map(s => ({
-    date: s.date,
-    min: (s.cardio && s.cardio['cool-min']) || 0,
-    hr: s.cardio && s.cardio['cool-hr'],
-    warm: (s.cardio && s.cardio['warm-min']) || 0,
-  })).filter(p => p.min || p.warm);
-
-  if (!pts.length) {
-    box.innerHTML = '<div class="card"><div class="empty-note">Noch keine Cardio-Daten.</div></div>';
-    return;
-  }
-
-  const W = 300, H = 96, padX = 10, top = 10, plotH = 66;
-  const goal = 60;
-  const max = Math.max(goal, ...pts.map(p => p.min));
-  const n = pts.length;
-  const slot = (W - 2 * padX) / n;
-  const bw = Math.max(6, Math.min(24, slot - 8));
-  const yOf = v => top + (1 - v / max) * plotH;
-
-  let s = pts.map((p, i) => {
-    const cx = padX + slot * i + slot / 2;
-    const yTop = yOf(p.min);
-    return `<rect x="${(cx - bw / 2).toFixed(1)}" y="${yTop.toFixed(1)}" width="${bw.toFixed(1)}"
-             height="${Math.max(2, top + plotH - yTop).toFixed(1)}" rx="3" fill="var(--accent-dim)"/>`;
-  }).join('');
-  s += `<line x1="0" y1="${yOf(goal).toFixed(1)}" x2="${W}" y2="${yOf(goal).toFixed(1)}"
-         stroke="var(--ready)" stroke-width="1" stroke-dasharray="4 4" opacity="0.7"/>`;
-  s += `<text x="${W}" y="${(yOf(goal) - 4).toFixed(1)}" font-size="9" fill="var(--ready)" text-anchor="end">Ziel 60 min</text>`;
-  s += `<line x1="0" y1="${top + plotH}" x2="${W}" y2="${top + plotH}" stroke="var(--line)" stroke-width="1"/>`;
-  if (n > 1) {
-    s += `<text x="0" y="${H - 2}" font-size="9" fill="var(--ink-faint)">${fmtDate(pts[0].date)}</text>`;
-    s += `<text x="${W}" y="${H - 2}" font-size="9" fill="var(--ink-faint)" text-anchor="end">${fmtDate(pts[n - 1].date)}</text>`;
-  }
-
-  const hrs = pts.map(p => p.hr).filter(v => typeof v === 'number' && v > 0);
-  const avgHr = hrs.length ? Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length) : null;
-  const warms = pts.map(p => p.warm).filter(v => v > 0);
-  const avgWarm = warms.length ? Math.round(warms.reduce((a, b) => a + b, 0) / warms.length) : null;
-
-  box.innerHTML = `
-    <div class="card">
-      <div class="stat-row">
-        <div class="name">Crosstrainer nach dem Training</div>
-        <div class="delta">${pts[pts.length - 1].min} min</div>
-      </div>
-      <div class="chart"><svg viewBox="0 0 ${W} ${H}">${s}</svg></div>
-      <div class="legend">
-        Balken: Minuten nach dem Kraftteil${avgHr ? ` · Ø Puls ${avgHr} bpm` : ''}${avgWarm ? ` · Warm-up Ø ${avgWarm} min` : ''}
-      </div>
-    </div>`;
 }
 
 document.getElementById('calPrev').addEventListener('click', () => {
@@ -1185,30 +1614,33 @@ document.getElementById('calNext').addEventListener('click', () => {
   renderCalendar(trainingDays(sortedSessions()));
 });
 
+/* ============================================================
+   Tabs und Start
+   ============================================================ */
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     const view = btn.getAttribute('data-view');
     document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
     document.getElementById('viewTrain').hidden = view !== 'train';
+    document.getElementById('viewBody').hidden  = view !== 'body';
     document.getElementById('viewStats').hidden = view !== 'stats';
     document.body.classList.toggle('stats', view === 'stats');
+    document.body.classList.toggle('body-view', view === 'body');
     if (view === 'stats') renderStats();
+    if (view === 'body') renderBody();
     window.scrollTo(0, 0);
   });
 });
 
-// erste Karte offen zeigen
-if (container.firstElementChild) container.firstElementChild.classList.add('open');
-EXERCISES.forEach(ex => updateHint(ex.id));
+renderExercises();
+renderWarm();
+renderMobility();
+mobNote.value = data.current.mobilityNote || '';
 renderDataCard();
-renderSnapshots();
 checkMirror();
 
-// Service Worker: macht die App offline-fähig (nur über http/https, nicht per Doppelklick)
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
 }
 </script>
 </body>
