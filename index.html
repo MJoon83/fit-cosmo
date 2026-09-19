@@ -427,6 +427,9 @@
           <button class="btn-sec" id="exportMd" type="button">Markdown</button>
         </div>
 
+        <div class="field-label">Aufräumen</div>
+        <button class="btn-sec" id="btnMerge" type="button" style="width:100%;">Trainings am selben Tag zusammenführen</button>
+
         <div class="field-label">Schnappschüsse in dieser App</div>
         <select class="sel" id="snapSelect"><option>lade …</option></select>
         <button class="btn-sec" id="btnSnapRestore" type="button" style="margin-top:8px; width:100%;">Diesen Stand wiederherstellen</button>
@@ -531,7 +534,7 @@ const EXERCISES = [
   { id:'lattzug',      name:'Lattzug',                meta:'Sitz 4',                        w:30, step:2.5 },
   { id:'beinstrecker', name:'Beinstrecker (OS vorn)', meta:'Gerät 20 · Sitz 6, Polster 2',  w:30, step:2.5 },
   { id:'beinbeuger',   name:'Beinbeuger (OS hinten)', meta:'Gerät 16 · Sitz 6, Polster 5',  w:25, step:2.5 },
-  { id:'seitheben',    name:'Seitliches Heben',       meta:'Kettlebell · Rumpf',            w:8,  step:2 },
+  { id:'seitheben',    name:'Seitliches Heben',       meta:'Kettlebell · Rumpf',            w:12, step:2 },
 ];
 
 const MOBILITY = [
@@ -1355,6 +1358,12 @@ function renderDataCard() {
     hint.className = 'hint hold';
     hint.textContent = 'Sicherung ist aktuell.';
   }
+
+  const dup = duplicateDates();
+  if (dup.length) {
+    hint.className = 'hint ready';
+    hint.textContent = `${dup.length} ${dup.length === 1 ? 'Tag hat' : 'Tage haben'} mehrere Einträge (${dup.map(fmtDate).join(' ')}). Unten unter „Aufräumen“ zusammenführen.`;
+  }
 }
 
 async function saveBackup() {
@@ -1446,6 +1455,90 @@ document.getElementById('btnSnapRestore').addEventListener('click', () => {
   catch (err) { toast('Schnappschuss beschädigt'); return; }
   if (!confirm(`Stand vom ${fmtStamp(snap.ts)} mit ${incoming.sessions.length} Trainings laden?\n\nDer aktuelle Stand wird ersetzt, vorher aber gesichert.`)) return;
   applyRestore(incoming, 'vor Rückkehr zu Schnappschuss');
+});
+
+/* Mehrere Einträge am selben Tag zu einem zusammenführen.
+   Kommt vor, wenn mitten im Training gespeichert und danach weitergemacht wurde.
+   Nichts wird verworfen: Übungen, Notizen und Häkchen aus allen Einträgen
+   landen im Ergebnis. Nur Übungen ganz ohne Wiederholungen und ohne Notiz
+   fallen weg - das sind versehentliche Speicherungen. */
+function duplicateDates() {
+  const byDate = {};
+  data.sessions.forEach(s => { byDate[s.date] = (byDate[s.date] || 0) + 1; });
+  return Object.keys(byDate).filter(d => byDate[d] > 1).sort();
+}
+
+function mergeSameDay(list) {
+  const out = { date: list[0].date, entries: {}, warmup: false, mobility: {}, mobilityNote: '' };
+  const mobNotes = [];
+  const repsOf = e => [e.s1, e.s2, e.s3].filter(v => typeof v === 'number');
+
+  list.forEach(sess => {
+    if (sess.warmup) out.warmup = true;
+    if (sess.cardio && sess.cardio['warm-min'] != null) out.warmup = true;   // Altdaten
+    const m = sess.mobility || {};
+    Object.keys(m).forEach(k => { if (m[k]) out.mobility[k] = true; });
+    if (sess.mobilityNote) mobNotes.push(sess.mobilityNote);
+
+    Object.keys(sess.entries || {}).forEach(id => {
+      const e = sess.entries[id];
+      if (!e) return;
+      const sum = repsOf(e).reduce((a, b) => a + b, 0);
+      const has = repsOf(e).length > 0;
+      const prev = out.entries[id];
+      if (!prev) {
+        out.entries[id] = Object.assign({}, e, { _sum: has ? sum : -1 });
+        return;
+      }
+      if (has && sum > prev._sum) {
+        const note = [e.note, prev.note].map(x => (x || '').trim()).filter(Boolean);
+        out.entries[id] = Object.assign({}, e, { _sum: sum, note: [...new Set(note)].join(' / ') });
+      } else if (e.note && !prev.note) {
+        prev.note = e.note;
+      }
+    });
+  });
+
+  Object.keys(out.entries).forEach(id => {
+    const e = out.entries[id];
+    delete e._sum;
+    const has = repsOf(e).length > 0;
+    if (!has && !(e.note || '').trim()) delete out.entries[id];
+  });
+  out.mobilityNote = [...new Set(mobNotes)].join(' / ');
+  return out;
+}
+
+document.getElementById('btnMerge').addEventListener('click', () => {
+  const dates = duplicateDates();
+  if (!dates.length) { toast('Keine Trainings am selben Tag'); return; }
+
+  const lines = dates.map(d => {
+    const list = data.sessions.filter(s => s.date === d);
+    const merged = mergeSameDay(list);
+    return `${fmtDate(d)}${d.slice(0,4)}: ${list.length} Einträge → 1 mit ${Object.keys(merged.entries).length} Übungen`;
+  });
+
+  if (!confirm(
+    'Folgende Tage werden zusammengeführt:\n\n' + lines.join('\n') +
+    '\n\nAlle Übungen und Notizen bleiben erhalten — nur Einträge ganz ohne ' +
+    'Wiederholungen fallen weg.\nVorher wird ein Schnappschuss angelegt.'
+  )) return;
+
+  snapshot('vor dem Zusammenführen').then(() => {
+    const keep = [];
+    const done = {};
+    data.sessions.forEach(sess => {
+      if (done[sess.date]) return;
+      const list = data.sessions.filter(s => s.date === sess.date);
+      keep.push(list.length > 1 ? mergeSameDay(list) : sess);
+      done[sess.date] = true;
+    });
+    data.sessions = keep.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    save();
+    toast('Zusammengeführt ✓');
+    setTimeout(() => location.reload(), 700);
+  });
 });
 
 function checkMirror() {

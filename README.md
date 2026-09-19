@@ -45,9 +45,8 @@ tatsächlich mitgeht.
 ## Offene Punkte
 
 - [ ] Auf dem iPhone prüfen, ob die Statusleiste in beiden Modi lesbar ist
-- [ ] Startgewicht für Lattzug und Kettlebell-Seitheben stimmt noch nicht
-      (geraten: 30 kg bzw. 8 kg) — beim nächsten Training anpassen
-- [ ] Doppelte Einträge am 19.08. und 04.09. in den Daten aufräumen
+- [ ] In der App einmal „Trainings am selben Tag zusammenführen“ antippen
+      (19.08. und 04.09. bestehen aus je zwei Teil-Einträgen)
 
 ## Dateien
 
