@@ -99,11 +99,50 @@
   .empty { padding: 20px 16px; color: var(--ink-dim); font-size: 13px; }
   footer { margin-top: 40px; font-size: 11px; color: var(--ink-faint); text-align: center; }
 
+  .printhead { display: none; }
+
+  /* ---------- Druck / PDF ----------
+     Querformat, kräftige Farben statt Grau, und die Trainingstage werden
+     nicht über den Hintergrund markiert, sondern über Rahmen und Fettschrift:
+     Hintergrundfarben lassen viele Drucker und PDF-Ausgaben weg. */
+  @page { size: A4 landscape; margin: 12mm; }
+
   @media print {
+    :root {
+      --bg: #fff; --surface: #fff; --surface-2: #fff; --line: #aab0bb;
+      --ink: #000; --ink-dim: #2b2f36; --ink-faint: #4a5059;
+      --accent: #c0261f; --brand: #1b2b5c; --ready: #14535f; --ok: #14603a;
+      --shadow: none;
+    }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body { background: #fff; }
     .bar, .drop { display: none !important; }
-    .card, .month, .tile { break-inside: avoid; box-shadow: none; }
-    .wrap { padding: 0; }
+    .printhead { display: block; font-size: 11px; color: #4a5059; margin-bottom: 14px; }
+    .wrap { max-width: none; padding: 0; }
+    h1 { font-size: 22px; }
+    .sub { display: none; }
+
+    .tiles { grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .tile { padding: 10px 6px; }
+    .tile .v { font-size: 19px; }
+
+    .months { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .month { padding: 8px; }
+    .month .mh { font-size: 11px; margin-bottom: 6px; }
+    .cal { gap: 2px; }
+    .cal div { font-size: 8.5px; border-radius: 3px; background: #fff; color: #000; box-shadow: inset 0 0 0 0.5px #d2d6dd; }
+    .cal .dow { box-shadow: none; color: #6b7079; font-size: 7.5px; }
+    .cal .blank { box-shadow: none; }
+    .cal .hit { background: #f7d3d1; color: #000; font-weight: 800; box-shadow: inset 0 0 0 1.5px #c0261f; }
+
+    h2.sec { margin: 16px 0 8px; color: #000; }
+    .card, .month, .tile { break-inside: avoid; box-shadow: none; border-color: #aab0bb; }
+    table { font-size: 9.5px; }
+    th, td { padding: 3px 6px; }
+    .legend { font-size: 9.5px; color: #2b2f36; padding-bottom: 8px; }
+    .exhead .name { font-size: 14px; }
+    .scroll { overflow: visible; }
+    footer { color: #4a5059; }
   }
 </style>
 </head>
@@ -124,6 +163,7 @@
   </div>
 
   <div id="report" hidden>
+    <div class="printhead" id="printhead"></div>
     <div class="bar">
       <div class="file" id="fileInfo"></div>
       <button class="btn sec" id="again" type="button">Andere Datei</button>
@@ -273,8 +313,10 @@ function render(d, filename, exportedAt, keepScroll) {
 
   dropEl.hidden = true;
   document.getElementById('report').hidden = false;
-  document.getElementById('fileInfo').innerHTML =
-    `<b>${esc(filename)}</b>${exportedAt ? ' · gesichert am ' + fmtDay(String(exportedAt).slice(0,10)) : ''}`;
+  const quelle = `${esc(filename)}${exportedAt ? ' · gesichert am ' + fmtDay(String(exportedAt).slice(0,10)) : ''}`;
+  document.getElementById('fileInfo').innerHTML = `<b>${quelle}</b>`;
+  document.getElementById('printhead').textContent =
+    `Quelle: ${filename}${exportedAt ? ' · gesichert am ' + fmtDay(String(exportedAt).slice(0,10)) : ''} · gedruckt am ${fmtDay(new Date().toISOString().slice(0,10))}`;
 
   /* Kennzahlen */
   let gap = 0, gapText = '–';
