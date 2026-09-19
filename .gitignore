@@ -1,5 +1,20 @@
-# Persönliche Trainingsdaten und Backups - werden NICHT veröffentlicht
+# ---------------------------------------------------------------
+# Persoenliche Daten - NIEMALS veroeffentlichen.
+# Bewusst breit gefasst: lieber zu viel ausgeschlossen als zu wenig.
+# ---------------------------------------------------------------
 daten/
+Bkup*/
+backup*/
+Backup*/
+
+# alle Sicherungen und Exporte, egal in welchem Ordner
+*backup*.json
+*Backup*.json
+training-*.json
+training-*.csv
+training-*.md
+*.csv
+Text.txt
 
 # macOS
 .DS_Store
