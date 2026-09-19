@@ -101,9 +101,9 @@
 
   @media print {
     body { background: #fff; }
-    .bar, .drop, .btn { display: none !important; }
+    .bar, .drop { display: none !important; }
     .card, .month, .tile { break-inside: avoid; box-shadow: none; }
-    .wrap { max-width: none; padding: 0; }
+    .wrap { padding: 0; }
   }
 </style>
 </head>
@@ -263,7 +263,10 @@ function lineSVG(points, color) {
 }
 
 /* ---------- Bericht aufbauen ---------- */
-function render(d, filename, exportedAt) {
+let letzte = null;   // zuletzt geladene Daten, fuer den Neuaufbau nach dem Drucken
+
+function render(d, filename, exportedAt, keepScroll) {
+  letzte = { d: d, filename: filename, exportedAt: exportedAt };
   const sessions = d.sessions.slice().sort((a,b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   const health = Array.isArray(d.health) ? d.health.slice().sort((a,b) => (a.date < b.date ? -1 : 1)) : [];
   const days = [...new Set(sessions.map(s => s.date))].sort();
@@ -406,7 +409,24 @@ function render(d, filename, exportedAt) {
   document.getElementById('foot').textContent =
     `Erstellt am ${fmtDay(new Date().toISOString().slice(0,10))} aus ${filename}. Diese Seite verändert keine Daten.`;
 
-  window.scrollTo(0, 0);
+  if (!keepScroll) window.scrollTo(0, 0);
+}
+
+/* Safari rechnet die Raster-Anordnung nach dem Drucken nicht immer zurueck -
+   egal ob gedruckt oder abgebrochen. Deshalb danach einmal sauber neu
+   aufbauen, an derselben Stelle der Seite. */
+function nachDemDrucken() {
+  if (!letzte) return;
+  const y = window.scrollY;
+  render(letzte.d, letzte.filename, letzte.exportedAt, true);
+  window.scrollTo(0, y);
+}
+window.addEventListener('afterprint', nachDemDrucken);
+if (window.matchMedia) {
+  const mq = window.matchMedia('print');
+  const handler = e => { if (!e.matches) nachDemDrucken(); };
+  if (mq.addEventListener) mq.addEventListener('change', handler);
+  else if (mq.addListener) mq.addListener(handler);
 }
 </script>
 </body>
