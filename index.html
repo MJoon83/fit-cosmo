@@ -435,10 +435,11 @@
         <button class="btn-sec" id="btnSnapRestore" type="button" style="margin-top:8px; width:100%;">Diesen Stand wiederherstellen</button>
 
         <p class="fineprint">
-          Backup speichern legt eine JSON-Datei ab — auf dem iPhone über „In Dateien sichern“
-          in iCloud Drive. Auf dem MacBook liegt sie dann im selben iCloud-Ordner und lässt
-          sich dort mit „Backup laden“ einlesen. Achtung: wer zuletzt lädt, überschreibt —
-          also immer nur auf einem Gerät eintragen.
+          Backup speichern legt eine JSON-Datei ab. Auf dem iPhone „In Dateien sichern“ →
+          <strong>iCloud Drive → Schreibtisch → projekte → fit@cosmo-daten</strong>.
+          Auf dem MacBook liegt sie im selben Ordner und lässt sich dort mit „Backup laden“
+          einlesen. Achtung: wer zuletzt lädt, überschreibt — also immer nur auf einem
+          Gerät eintragen.
         </p>
         <input type="file" id="restoreFile" accept="application/json,.json" style="display:none">
       </div>
@@ -1350,7 +1351,7 @@ function renderDataCard() {
 
   if (due) {
     hint.className = 'hint ready';
-    hint.textContent = 'Backup fällig. Datei speichern und in iCloud Drive ablegen — das ist die einzige Sicherung, die das Gerät überlebt.';
+    hint.textContent = 'Backup fällig. Datei speichern und in iCloud Drive unter fit@cosmo-daten ablegen — das ist die einzige Sicherung, die das Gerät überlebt.';
   } else if (n === 0) {
     hint.className = 'hint hold';
     hint.textContent = 'Noch keine abgeschlossenen Trainings.';

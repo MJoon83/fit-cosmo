@@ -37,9 +37,13 @@ Farbwerte sind frei verwendbar, die Marke nicht.
 
 ## Datenschutz
 
-Persönliche Daten gehören ausschließlich in `daten/` oder in die iCloud —
-niemals ins Repository. Die `.gitignore` schließt alle Backup- und Exportdateien
-aus, unabhängig vom Ordner. **Vor jedem Push prüfen:** `git status` zeigt, was
+Persönliche Daten liegen **außerhalb dieses Projekts**, im Nachbarordner
+`~/Desktop/projekte/fit@cosmo-daten/` (über iCloud auch am iPhone erreichbar).
+So können sie gar nicht erst versehentlich veröffentlicht werden.
+
+Die `.gitignore` schließt zusätzlich alle Backup- und Exportdateien aus,
+unabhängig vom Ordner — als zweite Sicherung, nicht als erste.
+**Vor jedem Push prüfen:** `git status --untracked-files=all` zeigt, was
 tatsächlich mitgeht.
 
 ## Offene Punkte
@@ -57,7 +61,7 @@ tatsächlich mitgeht.
 | `sw.js` | Service Worker — sorgt dafür, dass die App offline funktioniert |
 | `icons/` | App-Icons für Homescreen und Browser-Tab |
 | `archiv/tracker-alt.html` | Die ursprüngliche Einzeldatei, unverändert als Sicherung |
-| `daten/` | Eigene Exporte und Backups — bleibt lokal, wird nie veröffentlicht |
+| `../fit@cosmo-daten/` | Deine Sicherungen und Exporte — bewusst außerhalb des Projekts |
 
 ## Lokal starten
 
@@ -89,7 +93,8 @@ gespeicherten Training automatisch einen internen Schnappschuss an.
 Trotzdem gilt: iOS kann Browser-Speicher löschen, wenn eine Website lange nicht
 benutzt wird oder der Safari-Cache geleert wird. **Deshalb regelmäßig
 "Backup speichern"** in der Karte *Daten & Sicherung* antippen und die
-JSON-Datei in iCloud Drive ablegen. Die App erinnert daran, wenn das letzte
+JSON-Datei in `fit@cosmo-daten` ablegen (iCloud Drive → Schreibtisch →
+projekte → fit@cosmo-daten). Die App erinnert daran, wenn das letzte
 Backup älter als 14 Tage ist.
 
 Ein Backup lässt sich jederzeit über "Backup laden" wieder einlesen.
