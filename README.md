@@ -35,6 +35,23 @@ Petrol `#236978`, Türkis `#32dad4`. Hell- und Dunkelmodus folgen automatisch de
 iPhone-Einstellung. Bewusst **ohne** Logo, Wortmarke oder Bilder des Studios —
 Farbwerte sind frei verwendbar, die Marke nicht.
 
+## Auswertung am MacBook
+
+`auswertung.html` im Finder doppelklicken, die neueste Backup-Datei aus
+`fit@cosmo-daten` auswählen (oder hineinziehen) — fertig. Die Seite zeigt
+Kennzahlen, alle Monate als Kalender, jede Übung mit Kurve und vollständiger
+Tabelle, die Körperwerte und alle Trainings im Einzelnen. Über „Drucken“ wird
+daraus ein PDF.
+
+Sie braucht kein Internet und keinen Server, und sie kann nichts verändern:
+die Datei wird nur gelesen. Damit ist ausgeschlossen, dass ein Blick auf dem
+Mac den Stand auf dem iPhone überschreibt.
+
+Hinweis für später: Die Übungsnamen stehen in `auswertung.html` noch einmal
+(Konstante `NAMES`), damit die Datei allein lauffähig ist. Wer in `index.html`
+eine Übung ergänzt, sollte sie dort ebenfalls eintragen — sonst erscheint die
+interne Kennung statt des Namens.
+
 ## Datenschutz
 
 Persönliche Daten liegen **außerhalb dieses Projekts**, im Nachbarordner
@@ -59,6 +76,7 @@ tatsächlich mitgeht.
 | `index.html` | Die komplette App (HTML, CSS, JavaScript in einer Datei) |
 | `manifest.webmanifest` | Macht die App zur "PWA": Name und Icon für den Homescreen |
 | `sw.js` | Service Worker — sorgt dafür, dass die App offline funktioniert |
+| `auswertung.html` | Auswertung am MacBook: Backup-Datei öffnen, Verlauf ansehen, drucken. Liest nur, schreibt nie |
 | `icons/` | App-Icons für Homescreen und Browser-Tab |
 | `archiv/tracker-alt.html` | Die ursprüngliche Einzeldatei, unverändert als Sicherung |
 | `../fit@cosmo-daten/` | Deine Sicherungen und Exporte — bewusst außerhalb des Projekts |

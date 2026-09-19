@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Trainings-Auswertung</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f6f6; --surface: #ffffff; --surface-2: #eceff4; --line: #dde1e9;
+    --ink: #14161c; --ink-dim: #5b6472; --ink-faint: #959595;
+    --accent: #e83a34; --brand: #263978; --ready: #236978; --ok: #1f7a4d;
+    --on-accent: #fff; --shadow: 0 1px 3px rgba(38,57,120,0.09);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1524; --surface: #172033; --surface-2: #212d45; --line: #2d3a56;
+      --ink: #eef2f8; --ink-dim: #99a4bb; --ink-faint: #6b7794;
+      --accent: #f2544c; --brand: #8ea3e0; --ready: #32dad4; --ok: #4ecb8b;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  header { margin-bottom: 24px; }
+  .kicker { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  h1 { font-size: 30px; margin: 6px 0 0; letter-spacing: -0.02em; }
+  .sub { color: var(--ink-dim); font-size: 14px; margin-top: 6px; }
+
+  .drop {
+    border: 2px dashed var(--line); border-radius: var(--radius); background: var(--surface);
+    padding: 40px 24px; text-align: center; margin-bottom: 24px;
+  }
+  .drop.over { border-color: var(--accent); background: var(--surface-2); }
+  .drop h2 { margin: 0 0 6px; font-size: 17px; }
+  .drop p { margin: 0 0 18px; color: var(--ink-dim); font-size: 13px; }
+  .btn {
+    display: inline-block; cursor: pointer; border: none; border-radius: 11px;
+    background: var(--accent); color: var(--on-accent);
+    font-family: inherit; font-size: 15px; font-weight: 600; padding: 12px 22px;
+  }
+  .btn.sec { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+
+  .bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+  .bar .file { flex: 1; font-size: 13px; color: var(--ink-dim); min-width: 200px; }
+  .bar .file b { color: var(--ink); }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 26px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; text-align: center; }
+  .tile .v { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .tile .k { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 5px; }
+
+  h2.sec { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); margin: 34px 0 14px; }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .grid { display: grid; gap: 14px; }
+  .grid.cols { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+  .months { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .month { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; }
+  .month .mh { font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 10px; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal div { aspect-ratio: 1; display: grid; place-items: center; font-size: 11px; border-radius: 6px; color: var(--ink-dim); background: var(--surface-2); }
+  .cal .dow { background: none; color: var(--ink-faint); font-size: 9px; }
+  .cal .blank { background: none; }
+  .cal .hit { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+
+  .exhead { display: flex; align-items: baseline; gap: 10px; padding: 14px 16px 0; }
+  .exhead .name { flex: 1; font-size: 16px; font-weight: 600; }
+  .exhead .delta { font-size: 12px; font-weight: 600; }
+  .delta.up { color: var(--ok); } .delta.flat { color: var(--ink-faint); } .delta.down { color: var(--accent); }
+  .chart { padding: 8px 12px 0; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .legend { font-size: 11px; color: var(--ink-faint); padding: 8px 16px 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); padding: 8px 10px; font-weight: 600; }
+  td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.note { color: var(--ready); }
+  .scroll { overflow-x: auto; }
+  .empty { padding: 20px 16px; color: var(--ink-dim); font-size: 13px; }
+  footer { margin-top: 40px; font-size: 11px; color: var(--ink-faint); text-align: center; }
+
+  @media print {
+    body { background: #fff; }
+    .bar, .drop, .btn { display: none !important; }
+    .card, .month, .tile { break-inside: avoid; box-shadow: none; }
+    .wrap { max-width: none; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Trainings-Tracker</div>
+    <h1>Auswertung</h1>
+    <div class="sub">Liest eine Backup-Datei und zeigt den Verlauf. Es wird nichts gespeichert und nichts verändert.</div>
+  </header>
+
+  <div class="drop" id="drop">
+    <h2>Backup-Datei öffnen</h2>
+    <p>Datei aus <strong>fit@cosmo-daten</strong> hierher ziehen oder auswählen —<br>
+       z.B. <code>training-backup-2026-09-19.json</code></p>
+    <button class="btn" id="pick" type="button">Datei auswählen</button>
+    <input type="file" id="file" accept="application/json,.json" style="display:none">
+  </div>
+
+  <div id="report" hidden>
+    <div class="bar">
+      <div class="file" id="fileInfo"></div>
+      <button class="btn sec" id="again" type="button">Andere Datei</button>
+      <button class="btn sec" id="print" type="button">Drucken / als PDF sichern</button>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <h2 class="sec">Wann trainiert</h2>
+    <div class="months" id="months"></div>
+    <h2 class="sec">Übungen</h2>
+    <div class="grid cols" id="exercises"></div>
+    <h2 class="sec" id="bodyHead" hidden>Körper</h2>
+    <div class="grid cols" id="body" hidden></div>
+    <h2 class="sec">Alle Trainings</h2>
+    <div class="card scroll" id="sessions"></div>
+    <footer id="foot"></footer>
+  </div>
+</div>
+<script>
+/* Namen der Übungen. Muss zur Liste in index.html passen — steht hier noch
+   einmal, damit diese Datei ohne Internet und ohne Nachbardateien läuft.
+   Unbekannte Kennungen aus älteren Sicherungen werden trotzdem angezeigt. */
+const NAMES = {
+  rudern: 'Rudern', revbutterfly: 'Butterfly Reverse', brustpresse: 'Brustpresse sitzend',
+  butterfly: 'Butterfly', urruecken: 'Unterer Rücken', lattzug: 'Lattzug',
+  beinstrecker: 'Beinstrecker (OS vorn)', beinbeuger: 'Beinbeuger (OS hinten)',
+  seitheben: 'Seitliches Heben (Kettlebell)',
+};
+const ORDER = ['rudern','revbutterfly','brustpresse','butterfly','urruecken','lattzug','beinstrecker','beinbeuger','seitheben'];
+const MOBILITY = { catcow:'Cat-Cow', pigeon:'Pigeon 90-90', dorsal:'Dorsale Dehnung',
+  hipopen:'Hüftbeuger öffnen', knee:'Kniemobilisierung', ankle:'Sprunggelenksmobilisierung' };
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DOW = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const BODY = [
+  { id:'weight', label:'Gewicht', unit:'kg', down:true },
+  { id:'fat', label:'Körperfett', unit:'%', down:true },
+  { id:'muscle', label:'Muskelmasse', unit:'kg', down:false },
+  { id:'visceral', label:'Viszeralfett', unit:'', down:true },
+  { id:'chest', label:'Brust', unit:'cm', down:true },
+  { id:'hip', label:'Hüfte', unit:'cm', down:true },
+  { id:'arm', label:'Oberarm', unit:'cm', down:false },
+  { id:'thigh', label:'Oberschenkel', unit:'cm', down:true },
+];
+
+const pad2 = n => String(n).padStart(2, '0');
+const fmt = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dDate = iso => new Date(iso + 'T12:00:00');
+const dBetween = (a, b) => Math.round((dDate(b) - dDate(a)) / 86400000);
+const fmtDay = iso => { const p = String(iso).split('-'); return `${p[2]}.${p[1]}.${p[0]}`; };
+const nameOf = id => NAMES[id] || id;
+const repsOf = e => [e.s1, e.s2, e.s3].filter(v => typeof v === 'number');
+
+/* ---------- Datei einlesen ---------- */
+const dropEl = document.getElementById('drop');
+const fileEl = document.getElementById('file');
+
+document.getElementById('pick').addEventListener('click', () => fileEl.click());
+fileEl.addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
+document.getElementById('again').addEventListener('click', () => {
+  document.getElementById('report').hidden = true;
+  dropEl.hidden = false;
+  fileEl.value = '';
+});
+document.getElementById('print').addEventListener('click', () => window.print());
+
+['dragenter','dragover'].forEach(t => dropEl.addEventListener(t, e => { e.preventDefault(); dropEl.classList.add('over'); }));
+['dragleave','drop'].forEach(t => dropEl.addEventListener(t, e => { e.preventDefault(); dropEl.classList.remove('over'); }));
+dropEl.addEventListener('drop', e => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) readFile(f);
+});
+
+function readFile(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(fr.result); }
+    catch (err) { alert('Die Datei lässt sich nicht lesen — ist das eine Backup-Datei der Trainings-App?'); return; }
+    const d = parsed && parsed.data ? parsed.data : parsed;
+    if (!d || !Array.isArray(d.sessions)) { alert('In dieser Datei stehen keine Trainings.'); return; }
+    render(d, file.name, parsed.exportedAt);
+  };
+  fr.onerror = () => alert('Die Datei konnte nicht geöffnet werden.');
+  fr.readAsText(file);
+}
+
+/* ---------- Grafiken ---------- */
+function chartSVG(points) {
+  const W = 460, H = 190, padX = 14, top = 16, lineH = 84, barTop = 120, barH = 46;
+  const n = points.length;
+  const ws = points.map(p => p.weight);
+  const mn = Math.min.apply(null, ws), mx = Math.max.apply(null, ws);
+  const span = (mx - mn) || 1;
+  const padL = 52;
+  const x = i => (n === 1 ? (padL + W) / 2 : padL + i * (W - padL - padX) / (n - 1));
+  const y = v => top + (1 - (v - mn) / span) * lineH;
+  let s = '';
+  if (n > 1) s += `<path d="${ws.map((v,i) => `${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s += ws.map((v,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="var(--accent)"/>`).join('');
+  const slot = n > 1 ? (W - 52 - padX) / (n - 1) : W;
+  const bw = Math.max(6, Math.min(30, slot - 8));
+  s += points.map((p,i) => {
+    const h = Math.max(2, (p.reps / 36) * barH);
+    return `<rect x="${(x(i)-bw/2).toFixed(1)}" y="${(barTop+barH-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${p.reps >= 36 ? 'var(--brand)' : 'var(--line)'}"/>`;
+  }).join('');
+  s += `<line x1="0" y1="${barTop}" x2="${W-34}" y2="${barTop}" stroke="var(--ink-faint)" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>`;
+  s += `<text x="${W}" y="${barTop-4}" font-size="11" fill="var(--ink-faint)" text-anchor="end">3×12</text>`;
+  s += `<line x1="0" y1="${barTop+barH}" x2="${W}" y2="${barTop+barH}" stroke="var(--line)" stroke-width="1"/>`;
+  s += `<text x="0" y="${top+5}" font-size="11" fill="var(--ink-faint)">${fmt(mx)} kg</text>`;
+  s += `<text x="0" y="${top+lineH+4}" font-size="11" fill="var(--ink-faint)">${fmt(mn)} kg</text>`;
+  if (n > 1) {
+    s += `<text x="0" y="${H-4}" font-size="11" fill="var(--ink-faint)">${fmtDay(points[0].date).slice(0,6)}</text>`;
+    s += `<text x="${W}" y="${H-4}" font-size="11" fill="var(--ink-faint)" text-anchor="end">${fmtDay(points[n-1].date).slice(0,6)}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+
+function lineSVG(points, color) {
+  const W = 460, H = 160, padL = 56, padR = 14, top = 16, plotH = 92;
+  const n = points.length;
+  const vs = points.map(p => p.v);
+  const mn = Math.min.apply(null, vs), mx = Math.max.apply(null, vs);
+  const span = (mx - mn) || 1;
+  const x = i => (n === 1 ? (padL + W - padR)/2 : padL + i * (W - padL - padR) / (n - 1));
+  const y = v => top + (1 - (v - mn) / span) * plotH;
+  let s = '';
+  if (n > 1) s += `<path d="${vs.map((v,i) => `${i?'L':'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s += vs.map((v,i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" fill="${color}"/>`).join('');
+  s += `<line x1="${padL-6}" y1="${top+plotH}" x2="${W}" y2="${top+plotH}" stroke="var(--line)" stroke-width="1"/>`;
+  s += `<text x="${padL-12}" y="${top+5}" font-size="11" fill="var(--ink-faint)" text-anchor="end">${fmt(mx)}</text>`;
+  s += `<text x="${padL-12}" y="${top+plotH+4}" font-size="11" fill="var(--ink-faint)" text-anchor="end">${fmt(mn)}</text>`;
+  if (n > 1) {
+    s += `<text x="${padL-8}" y="${H-4}" font-size="11" fill="var(--ink-faint)">${fmtDay(points[0].date).slice(0,6)}</text>`;
+    s += `<text x="${W}" y="${H-4}" font-size="11" fill="var(--ink-faint)" text-anchor="end">${fmtDay(points[n-1].date).slice(0,6)}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
+}
+
+/* ---------- Bericht aufbauen ---------- */
+function render(d, filename, exportedAt) {
+  const sessions = d.sessions.slice().sort((a,b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const health = Array.isArray(d.health) ? d.health.slice().sort((a,b) => (a.date < b.date ? -1 : 1)) : [];
+  const days = [...new Set(sessions.map(s => s.date))].sort();
+
+  dropEl.hidden = true;
+  document.getElementById('report').hidden = false;
+  document.getElementById('fileInfo').innerHTML =
+    `<b>${esc(filename)}</b>${exportedAt ? ' · gesichert am ' + fmtDay(String(exportedAt).slice(0,10)) : ''}`;
+
+  /* Kennzahlen */
+  let gap = 0, gapText = '–';
+  for (let i = 1; i < days.length; i++) gap = Math.max(gap, dBetween(days[i-1], days[i]));
+  if (gap) gapText = gap + ' Tage';
+  const spanDays = days.length > 1 ? dBetween(days[0], days[days.length-1]) : 0;
+  const perWeek = spanDays > 0 ? (days.length / (spanDays / 7)) : days.length;
+  let totalSets = 0;
+  sessions.forEach(s => Object.values(s.entries || {}).forEach(e => { totalSets += repsOf(e).length; }));
+
+  document.getElementById('tiles').innerHTML = `
+    <div class="tile"><div class="v">${sessions.length}</div><div class="k">Trainings</div></div>
+    <div class="tile"><div class="v">${fmt(Math.round(perWeek*10)/10)}</div><div class="k">Ø pro Woche</div></div>
+    <div class="tile"><div class="v">${totalSets}</div><div class="k">Sätze gesamt</div></div>
+    <div class="tile"><div class="v">${gapText}</div><div class="k">Längste Pause</div></div>
+    <div class="tile"><div class="v">${days.length ? fmtDay(days[0]).slice(0,6) : '–'}</div><div class="k">Erstes Training</div></div>
+    <div class="tile"><div class="v">${days.length ? fmtDay(days[days.length-1]).slice(0,6) : '–'}</div><div class="k">Letztes Training</div></div>`;
+
+  /* Kalender über alle Monate */
+  const hits = new Set(days);
+  let months = '';
+  if (days.length) {
+    const start = dDate(days[0]), end = dDate(days[days.length-1]);
+    const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cur <= end) {
+      const y = cur.getFullYear(), m = cur.getMonth();
+      const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+      const dim = new Date(y, m+1, 0).getDate();
+      let cells = DOW.map(x => `<div class="dow">${x}</div>`).join('');
+      for (let i = 0; i < offset; i++) cells += '<div class="blank"></div>';
+      let count = 0;
+      for (let dd = 1; dd <= dim; dd++) {
+        const iso = `${y}-${pad2(m+1)}-${pad2(dd)}`;
+        const hit = hits.has(iso);
+        if (hit) count++;
+        cells += `<div class="${hit ? 'hit' : ''}">${dd}</div>`;
+      }
+      months += `<div class="month"><div class="mh">${MONTHS[m]} ${y} · ${count}×</div><div class="cal">${cells}</div></div>`;
+      cur.setMonth(cur.getMonth() + 1);
+    }
+  }
+  document.getElementById('months').innerHTML = months || '<div class="empty">Keine Trainings.</div>';
+
+  /* Übungen */
+  const ids = [...new Set([...ORDER, ...sessions.flatMap(s => Object.keys(s.entries || {}))])];
+  let exHtml = '';
+  ids.forEach(id => {
+    const pts = [];
+    sessions.forEach(s => {
+      const e = (s.entries || {})[id];
+      if (!e || e.weight == null || !repsOf(e).length) return;
+      pts.push({ date: s.date, weight: e.weight, reps: repsOf(e).reduce((a,b)=>a+b,0), sets: [e.s1,e.s2,e.s3], note: e.note || '' });
+    });
+    if (!pts.length) return;
+    const first = pts[0], last = pts[pts.length-1];
+    const diff = last.weight - first.weight;
+    const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+    const txt = diff === 0 ? '±0 kg' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} kg`;
+    const rows = pts.slice().reverse().map(p => `
+      <tr><td>${fmtDay(p.date).slice(0,6)}</td>
+          <td class="num">${fmt(p.weight)} kg</td>
+          <td class="num">${p.sets.map(v => v == null ? '–' : v).join(' / ')}</td>
+          <td class="note">${esc(p.note)}</td></tr>`).join('');
+    exHtml += `
+      <div class="card">
+        <div class="exhead"><div class="name">${esc(nameOf(id))}</div><div class="delta ${cls}">${txt}</div></div>
+        <div class="chart">${chartSVG(pts)}</div>
+        <div class="legend">${fmt(first.weight)} → <strong style="color:var(--ink)">${fmt(last.weight)} kg</strong> in ${pts.length} ${pts.length===1?'Einheit':'Einheiten'}</div>
+        <table><thead><tr><th>Datum</th><th class="num">Gewicht</th><th class="num">Sätze</th><th>Notiz</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>`;
+  });
+  document.getElementById('exercises').innerHTML = exHtml || '<div class="card"><div class="empty">Keine Übungsdaten.</div></div>';
+
+  /* Körper */
+  if (health.length) {
+    document.getElementById('bodyHead').hidden = false;
+    document.getElementById('body').hidden = false;
+    const colors = { weight:'var(--accent)', fat:'var(--ready)', muscle:'var(--ok)' };
+    let html = '';
+    BODY.forEach(f => {
+      const pts = health.filter(h => typeof h[f.id] === 'number').map(h => ({ date: h.date, v: h[f.id] }));
+      if (pts.length < 1) return;
+      const a = pts[0].v, b = pts[pts.length-1].v, diff = b - a;
+      const good = f.down ? diff < 0 : diff > 0;
+      const cls = diff === 0 ? 'flat' : good ? 'up' : 'down';
+      const txt = pts.length < 2 ? '—' : (diff === 0 ? '±0' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} ${f.unit}`);
+      html += `
+        <div class="card">
+          <div class="exhead"><div class="name">${f.label}</div><div class="delta ${cls}">${txt}</div></div>
+          <div class="chart">${lineSVG(pts, colors[f.id] || 'var(--brand)')}</div>
+          <div class="legend">${fmt(a)} → <strong style="color:var(--ink)">${fmt(b)} ${f.unit}</strong> · ${pts.length} ${pts.length===1?'Messung':'Messungen'}</div>
+        </div>`;
+    });
+    const cols = BODY.filter(f => health.some(h => typeof h[f.id] === 'number'));
+    const rows = health.slice().reverse().map(h => `<tr><td>${fmtDay(h.date)}</td>${cols.map(f => `<td class="num">${typeof h[f.id]=== 'number' ? fmt(h[f.id]) : ''}</td>`).join('')}<td class="note">${esc(h.note || '')}</td></tr>`).join('');
+    html += `<div class="card scroll" style="grid-column:1/-1">
+        <table><thead><tr><th>Datum</th>${cols.map(f => `<th class="num">${f.label}${f.unit?' '+f.unit:''}</th>`).join('')}<th>Notiz</th></tr></thead><tbody>${rows}</tbody></table>
+      </div>`;
+    document.getElementById('body').innerHTML = html;
+  } else {
+    document.getElementById('bodyHead').hidden = true;
+    document.getElementById('body').hidden = true;
+  }
+
+  /* Alle Trainings */
+  const sRows = sessions.slice().reverse().map(s => {
+    const list = ids.filter(id => (s.entries||{})[id] && repsOf(s.entries[id]).length);
+    const detail = list.map(id => {
+      const e = s.entries[id];
+      return `${esc(nameOf(id))} ${fmt(e.weight)}&nbsp;kg ${[e.s1,e.s2,e.s3].map(v=>v==null?'–':v).join('/')}${e.note ? ` <span style="color:var(--ready)">(${esc(e.note)})</span>` : ''}`;
+    }).join(' · ');
+    const mob = Object.keys(s.mobility || {}).filter(k => s.mobility[k]).map(k => MOBILITY[k] || k);
+    const extras = [];
+    if (s.warmup || (s.cardio && s.cardio['warm-min'] != null)) extras.push('Warm-up ✓');
+    if (mob.length) extras.push('Mobility: ' + mob.join(', '));
+    if (s.mobilityNote) extras.push(esc(s.mobilityNote));
+    return `<tr>
+        <td style="white-space:nowrap">${fmtDay(s.date)}</td>
+        <td class="num">${list.length}</td>
+        <td>${detail || '—'}${extras.length ? `<div style="color:var(--ink-faint); margin-top:4px">${extras.join(' · ')}</div>` : ''}</td>
+      </tr>`;
+  }).join('');
+  document.getElementById('sessions').innerHTML =
+    `<table><thead><tr><th>Datum</th><th class="num">Übungen</th><th>Einzelheiten</th></tr></thead><tbody>${sRows}</tbody></table>`;
+
+  document.getElementById('foot').textContent =
+    `Erstellt am ${fmtDay(new Date().toISOString().slice(0,10))} aus ${filename}. Diese Seite verändert keine Daten.`;
+
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
