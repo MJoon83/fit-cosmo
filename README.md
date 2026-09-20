@@ -33,7 +33,7 @@ Jede Übung hat zwei getrennte Felder:
   „steigern“. Beim nächsten Training steht es oben in der Übung, mit einem
   Knopf, der das Gewicht direkt übernimmt. Darunter zeigt die App, ob das
   eingestellte Gewicht das Ziel trifft, darüber oder darunter liegt.
-- **Notiz** — reiner Freitext für Beobachtungen („Rolle 1“, „links zwickt“).
+- **Notiz** — reiner Freitext für Beobachtungen am Gerät oder am Körper.
   Sie wird nicht mehr als Gewicht gedeutet.
 
 Beide werden mit der Einheit gespeichert und tauchen in Export und Auswertung

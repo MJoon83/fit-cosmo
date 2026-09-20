@@ -534,7 +534,7 @@
         <div class="field-label">Strecke</div>
         <select class="sel" id="mvRoute"><option value="">— neue Strecke —</option></select>
         <input class="txt-input" id="mvName" style="margin-top:8px;" autocomplete="off"
-               placeholder="Name, z.B. Waldrunde sonntags">
+               placeholder="Name der Strecke">
 
         <div class="field-label">Werte — alles freiwillig</div>
         <div class="grid2">
@@ -543,7 +543,7 @@
           <div class="fld"><div class="lbl">Dauer min</div><input id="mv-min" type="text" inputmode="numeric" autocomplete="off" placeholder="—"></div>
         </div>
 
-        <textarea class="note-input" id="mv-note" rows="2" placeholder="Notiz, z.B. zügig, kalt …"></textarea>
+        <textarea class="note-input" id="mv-note" rows="2" placeholder="Notiz …"></textarea>
         <button class="btn-exsave" id="mvSave" type="button">Bewegung speichern</button>
         <p class="fineprint">Leere Felder werden übersprungen — ein Datum genügt. Die Schrittzahl
           steht in der Fitness-App auf dem iPhone und muss von Hand übertragen werden;
@@ -989,7 +989,7 @@ function targetText(id, t, lastW) {
 
 /* Aus einer alten Notiz ein Ziel ableiten. Nur fuer die einmalige Umstellung;
    im laufenden Betrieb wird die Notiz nicht mehr gedeutet.
-   Zahlen, die zu einer Geraeteeinstellung gehoeren ("Rolle 1"), und sehr
+   Zahlen, die zu einer Geraeteeinstellung gehoeren, und sehr
    kleine Zahlen gelten nicht als Gewicht. */
 function targetFromNote(note) {
   const t = String(note || '').trim();
@@ -1217,7 +1217,7 @@ function renderExercises() {
 
         <div class="field-label">Notiz</div>
         <textarea class="note-input" rows="2" id="note-${ex.id}" style="margin-top:0;"
-                  placeholder="Freitext, z.B. „Rolle 1“ oder „links zwickt“ …">${esc(c.note || '')}</textarea>
+                  placeholder="Freitext — was dir aufgefallen ist …">${esc(c.note || '')}</textarea>
 
         <button class="btn-exsave" type="button" data-save="${ex.id}">Übung speichern</button>
 
