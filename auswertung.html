@@ -95,6 +95,11 @@
   td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   td.note { color: var(--ready); }
+  td.hit { color: var(--ok); font-weight: 700; text-align: center; }
+  td.miss { color: var(--ink-faint); text-align: center; }
+  td.zero { color: var(--accent); font-weight: 700; text-align: center; }
+  tr.now td { background: var(--surface-2); }
+  .cal .walk { box-shadow: inset 0 0 0 1.5px var(--ready); border-radius: 4px; }
   .scroll { overflow-x: auto; }
   .empty { padding: 20px 16px; color: var(--ink-dim); font-size: 13px; }
   footer { margin-top: 40px; font-size: 11px; color: var(--ink-faint); text-align: center; }
@@ -139,6 +144,9 @@
     .cal .hit { background: #f7d3d1; color: #000; font-weight: 800; box-shadow: inset 0 0 0 1.5px #c0261f; }
 
     h2.sec { margin: 16px 0 8px; color: #000; break-after: avoid; page-break-after: avoid; }
+    .cal .walk { box-shadow: inset 0 0 0 1.5px #14535f; }
+    td.hit { color: #14603a; } td.zero { color: #c0261f; }
+    tr.now td { background: #eef1f6; }
     /* Die Tabelle aller Trainings fuellt ohnehin eine Seite - sie faengt
        deshalb oben auf einer neuen an, statt unten angeschnitten zu werden. */
     #sessionsHead { break-before: page; page-break-before: always; margin-top: 0; }
@@ -200,6 +208,13 @@
     <div class="tiles" id="tiles"></div>
     <h2 class="sec">Wann trainiert</h2>
     <div class="months" id="months"></div>
+    <div class="legend" id="calKey" style="padding:8px 2px 0;"></div>
+
+    <h2 class="sec" id="weeksHead">Wochen gegen das Ziel</h2>
+    <div class="card scroll" id="weeks"></div>
+
+    <h2 class="sec" id="movesHead" hidden>Alltagsbewegung</h2>
+    <div class="card scroll" id="moves" hidden></div>
     <h2 class="sec">Übungen</h2>
     <div class="grid stack" id="exercises"></div>
     <h2 class="sec" id="bodyHead" hidden>Körper</h2>
@@ -243,6 +258,40 @@ const dBetween = (a, b) => Math.round((dDate(b) - dDate(a)) / 86400000);
 const fmtDay = iso => { const p = String(iso).split('-'); return `${p[2]}.${p[1]}.${p[0]}`; };
 const nameOf = id => NAMES[id] || id;
 const repsOf = e => [e.s1, e.s2, e.s3].filter(v => typeof v === 'number');
+
+const DEFAULT_GOALS = { gym: 2, move: 3 };
+const addDays = (iso, n) => { const d = dDate(iso); d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
+const mondayOf = iso => addDays(iso, -((dDate(iso).getDay() + 6) % 7));
+function weekNo(iso) {
+  const d = dDate(iso);
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+  const first = new Date(t.getFullYear(), 0, 4);
+  return 1 + Math.round(((t - first) / 86400000 - 3 + ((first.getDay() + 6) % 7)) / 7);
+}
+/* Ziele gelten ab einem Datum - so bewertet eine spaetere Aenderung nicht
+   rueckwirkend die Vergangenheit. */
+function goalAt(goals, kind, iso) {
+  let v = DEFAULT_GOALS[kind];
+  const list = (goals && Array.isArray(goals[kind])) ? goals[kind].slice() : [];
+  list.sort((a, b) => (a.from < b.from ? -1 : 1))
+      .forEach(g => { if (g.from <= iso && typeof g.value === 'number') v = g.value; });
+  return v;
+}
+/* Das Ziel einer Uebung: Gewicht, halten oder steigern. */
+function targetText(t, lastW, step) {
+  if (!t) return '';
+  if (t.kind === 'weight') return typeof t.kg === 'number' ? fmt(t.kg) + ' kg' : 'Gewicht';
+  if (t.kind === 'up')   return 'steigern' + (lastW != null ? ` (${fmt(lastW + (step || 2.5))} kg)` : '');
+  if (t.kind === 'hold') return 'halten'   + (lastW != null ? ` (${fmt(lastW)} kg)` : '');
+  return '';
+}
+const moveLine = m => [
+  m.km    != null ? fmt(m.km) + ' km' : '',
+  m.min   != null ? fmt(m.min) + ' min' : '',
+  m.steps != null ? fmt(m.steps) + ' Schritte' : '',
+].filter(Boolean).join(' · ');
 
 /* ---------- Datei einlesen ---------- */
 const dropEl = document.getElementById('drop');
@@ -337,7 +386,10 @@ function render(d, filename, exportedAt, keepScroll) {
   letzte = { d: d, filename: filename, exportedAt: exportedAt };
   const sessions = d.sessions.slice().sort((a,b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   const health = Array.isArray(d.health) ? d.health.slice().sort((a,b) => (a.date < b.date ? -1 : 1)) : [];
+  const moves  = Array.isArray(d.moves) ? d.moves.slice().sort((a,b) => (a.date < b.date ? -1 : 1)) : [];
+  const steps  = (d.steps && typeof d.steps === 'object') ? d.steps : {};
   const days = [...new Set(sessions.map(s => s.date))].sort();
+  const walkDays = [...new Set(moves.map(m => m.date))].sort();
 
   dropEl.hidden = true;
   document.getElementById('report').hidden = false;
@@ -365,9 +417,11 @@ function render(d, filename, exportedAt, keepScroll) {
 
   /* Kalender über alle Monate */
   const hits = new Set(days);
+  const walks = new Set(walkDays);
+  const alleTage = days.concat(walkDays).sort();
   let months = '';
-  if (days.length) {
-    const start = dDate(days[0]), end = dDate(days[days.length-1]);
+  if (alleTage.length) {
+    const start = dDate(alleTage[0]), end = dDate(alleTage[alleTage.length-1]);
     const cur = new Date(start.getFullYear(), start.getMonth(), 1);
     while (cur <= end) {
       const y = cur.getFullYear(), m = cur.getMonth();
@@ -375,18 +429,89 @@ function render(d, filename, exportedAt, keepScroll) {
       const dim = new Date(y, m+1, 0).getDate();
       let cells = DOW.map(x => `<div class="dow">${x}</div>`).join('');
       for (let i = 0; i < offset; i++) cells += '<div class="blank"></div>';
-      let count = 0;
+      let count = 0, wcount = 0;
       for (let dd = 1; dd <= dim; dd++) {
         const iso = `${y}-${pad2(m+1)}-${pad2(dd)}`;
-        const hit = hits.has(iso);
+        const hit = hits.has(iso), walk = walks.has(iso);
         if (hit) count++;
-        cells += `<div class="${hit ? 'hit' : ''}">${dd}</div>`;
+        if (walk) wcount++;
+        cells += `<div class="${[hit ? 'hit' : '', walk ? 'walk' : ''].filter(Boolean).join(' ')}">${dd}</div>`;
       }
-      months += `<div class="month"><div class="mh">${MONTHS[m]} ${y} · ${count}×</div><div class="cal">${cells}</div></div>`;
+      const mh = `${MONTHS[m]} ${y} · ${count}×` + (wcount ? ` · ${wcount}× Bewegung` : '');
+      months += `<div class="month"><div class="mh">${mh}</div><div class="cal">${cells}</div></div>`;
       cur.setMonth(cur.getMonth() + 1);
     }
   }
   document.getElementById('months').innerHTML = months || '<div class="empty">Keine Trainings.</div>';
+  document.getElementById('calKey').innerHTML = walkDays.length
+    ? 'Rot gefüllt: Krafttraining &nbsp;·&nbsp; türkis umrandet: Alltagsbewegung'
+    : '';
+
+  /* Wochen gegen das Ziel. Kein Mittelwert - jede Kalenderwoche steht fuer
+     sich, auch die ohne jede Aktivitaet. */
+  const weeksEl = document.getElementById('weeks');
+  if (!alleTage.length) {
+    weeksEl.innerHTML = '<div class="empty">Keine Daten.</div>';
+  } else {
+    const letzteWoche = mondayOf(alleTage[alleTage.length - 1]);
+    const rows = [];
+    let mo = mondayOf(alleTage[0]);
+    for (let guard = 0; mo <= letzteWoche && guard < 520; guard++, mo = addDays(mo, 7)) {
+      const bis = addDays(mo, 6);
+      rows.push({
+        monday: mo, sunday: bis, week: weekNo(mo),
+        gym:  days.filter(x => x >= mo && x <= bis).length,
+        move: walkDays.filter(x => x >= mo && x <= bis).length,
+        gymGoal:  goalAt(d.goals, 'gym', mo),
+        moveGoal: goalAt(d.goals, 'move', mo),
+      });
+    }
+    const zelle = (ist, soll) => soll <= 0
+      ? `<td class="miss">${ist}</td>`
+      : `<td class="${ist >= soll ? 'hit' : (ist === 0 ? 'zero' : 'miss')}">${ist} / ${soll}</td>`;
+    const gymOk = rows.filter(w => w.gym  >= w.gymGoal).length;
+    const movOk = rows.filter(w => w.move >= w.moveGoal).length;
+    const leer  = rows.filter(w => w.gym === 0).length;
+    weeksEl.innerHTML = `
+      <table>
+        <thead><tr><th>Woche</th><th>Zeitraum</th><th class="num">Krafttraining</th><th class="num">Alltagsbewegung</th></tr></thead>
+        <tbody>${rows.slice().reverse().map(w => `
+          <tr><td>KW ${w.week}</td>
+              <td style="white-space:nowrap">${fmtDay(w.monday).slice(0,6)}–${fmtDay(w.sunday)}</td>
+              ${zelle(w.gym, w.gymGoal)}${zelle(w.move, w.moveGoal)}</tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="legend" style="padding:10px 12px 12px;">
+        Kraftziel in <strong style="color:var(--ink)">${gymOk} von ${rows.length}</strong> Wochen erreicht ·
+        Bewegungsziel in <strong style="color:var(--ink)">${movOk} von ${rows.length}</strong>${leer ? ` · ${leer} ${leer === 1 ? 'Woche' : 'Wochen'} ganz ohne Krafttraining` : ''}
+      </div>`;
+  }
+
+  /* Alltagsbewegung - getrennt vom Krafttraining gefuehrt. */
+  const movesEl = document.getElementById('moves');
+  const movesHead = document.getElementById('movesHead');
+  if (moves.length) {
+    movesHead.hidden = false; movesEl.hidden = false;
+    const sum = k => moves.reduce((a, m) => a + (typeof m[k] === 'number' ? m[k] : 0), 0);
+    const mRows = moves.slice().reverse().map(m => `
+      <tr><td style="white-space:nowrap">${fmtDay(m.date)}</td>
+          <td>${esc(m.name || '')}</td>
+          <td class="num">${m.km    != null ? fmt(m.km) : ''}</td>
+          <td class="num">${m.min   != null ? fmt(m.min) : ''}</td>
+          <td class="num">${m.steps != null ? fmt(m.steps) : ''}</td>
+          <td class="note">${esc(m.note || '')}</td></tr>`).join('');
+    movesEl.innerHTML = `
+      <table>
+        <thead><tr><th>Datum</th><th>Strecke</th><th class="num">km</th><th class="num">Minuten</th><th class="num">Schritte</th><th>Notiz</th></tr></thead>
+        <tbody>${mRows}</tbody>
+      </table>
+      <div class="legend" style="padding:10px 12px 12px;">
+        ${moves.length} ${moves.length === 1 ? 'Eintrag' : 'Einträge'} an ${walkDays.length} ${walkDays.length === 1 ? 'Tag' : 'Tagen'} ·
+        zusammen ${fmt(Math.round(sum('km') * 10) / 10)} km, ${fmt(sum('min'))} Minuten, ${fmt(sum('steps'))} Schritte
+      </div>`;
+  } else {
+    movesHead.hidden = true; movesEl.hidden = true;
+  }
 
   /* Übungen */
   const ids = [...new Set([...ORDER, ...sessions.flatMap(s => Object.keys(s.entries || {}))])];
@@ -396,17 +521,20 @@ function render(d, filename, exportedAt, keepScroll) {
     sessions.forEach(s => {
       const e = (s.entries || {})[id];
       if (!e || e.weight == null || !repsOf(e).length) return;
-      pts.push({ date: s.date, weight: e.weight, reps: repsOf(e).reduce((a,b)=>a+b,0), sets: [e.s1,e.s2,e.s3], note: e.note || '' });
+      pts.push({ date: s.date, weight: e.weight, reps: repsOf(e).reduce((a,b)=>a+b,0), sets: [e.s1,e.s2,e.s3],
+                 note: e.note || '', target: e.target || null });
     });
     if (!pts.length) return;
     const first = pts[0], last = pts[pts.length-1];
     const diff = last.weight - first.weight;
     const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
     const txt = diff === 0 ? '±0 kg' : `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))} kg`;
+    const step = typeof steps[id] === 'number' ? steps[id] : 2.5;
     const rows = pts.slice().reverse().map(p => `
       <tr><td>${fmtDay(p.date).slice(0,6)}</td>
           <td class="num">${fmt(p.weight)} kg</td>
           <td class="num">${p.sets.map(v => v == null ? '–' : v).join(' / ')}</td>
+          <td>${esc(targetText(p.target, p.weight, step))}</td>
           <td class="note">${esc(p.note)}</td></tr>`).join('');
     exHtml += `
       <div class="card">
@@ -414,10 +542,10 @@ function render(d, filename, exportedAt, keepScroll) {
         <div class="exbody">
           <div class="chartcol">
             <div class="chart">${chartSVG(pts)}</div>
-            <div class="legend">${fmt(first.weight)} → <strong style="color:var(--ink)">${fmt(last.weight)} kg</strong> in ${pts.length} ${pts.length===1?'Einheit':'Einheiten'}${last.note ? ` · zuletzt notiert: <span style="color:var(--ready)">${esc(last.note)}</span>` : ''}</div>
+            <div class="legend">${fmt(first.weight)} → <strong style="color:var(--ink)">${fmt(last.weight)} kg</strong> in ${pts.length} ${pts.length===1?'Einheit':'Einheiten'}${last.target ? ` · nächstes Ziel: <strong style="color:var(--ink)">${esc(targetText(last.target, last.weight, step))}</strong>` : ''}${last.note ? ` · zuletzt notiert: <span style="color:var(--ready)">${esc(last.note)}</span>` : ''}</div>
           </div>
           <div class="tablecol">
-            <table><thead><tr><th>Datum</th><th class="num">Gewicht</th><th class="num">Sätze</th><th>Notiz</th></tr></thead><tbody>${rows}</tbody></table>
+            <table><thead><tr><th>Datum</th><th class="num">Gewicht</th><th class="num">Sätze</th><th>Ziel</th><th>Notiz</th></tr></thead><tbody>${rows}</tbody></table>
           </div>
         </div>
       </div>`;
@@ -464,7 +592,10 @@ function render(d, filename, exportedAt, keepScroll) {
     }).join(' · ');
     const mob = Object.keys(s.mobility || {}).filter(k => s.mobility[k]).map(k => MOBILITY[k] || k);
     const extras = [];
-    if (s.warmup || (s.cardio && s.cardio['warm-min'] != null)) extras.push('Warm-up ✓');
+    const warmBelegt = s.cardio && (s.cardio['warm-min'] != null || s.cardio['warm-hr'] != null);
+    if (s.warmup === true || warmBelegt) extras.push('Warm-up ✓');
+    else if (s.warmup === false) extras.push('kein Warm-up');
+    else extras.push('Warm-up: keine Angabe');
     if (mob.length) extras.push('Mobility: ' + mob.join(', '));
     if (s.mobilityNote) extras.push(esc(s.mobilityNote));
     return `<tr>

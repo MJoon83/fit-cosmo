@@ -15,15 +15,37 @@ Oben umschaltbar:
 - **Training** — Warm-up als Häkchen, neun Kraftübungen, Mobility-Block,
   darunter die Karte *Daten & Sicherung*. Jede Übung wird einzeln gespeichert;
   oben zählt ein Balken mit. Am Ende „Training abschließen“.
+- **Bewegung** — Spaziergänge und andere Alltagsbewegung: Datum, Strecke,
+  Schritte, Dauer — alles freiwillig. Wiederkehrende Strecken lassen sich
+  benennen und beim nächsten Mal auswählen.
 - **Körper** — Gewicht, Körperfett, Muskelmasse, Viszeralfett und die vier
   Umfänge (Brust, Hüfte, Oberarm, Oberschenkel). Leere Felder werden
   übersprungen, mehrere Eingaben am selben Tag werden zusammengeführt.
-- **Auswertung** — Kennzahlen, Monatskalender mit den Trainingstagen,
-  je Übung Gewichtskurve und Wiederholungs-Balken.
+- **Auswertung** — Kennzahlen, Monatskalender mit Trainings- und
+  Bewegungstagen, Wochenziele als Soll/Ist je Kalenderwoche, je Übung
+  Gewichtskurve und Wiederholungs-Balken.
 
-Die Notiz einer Übung ist die Merkhilfe für die Progression: sie erscheint beim
-nächsten Mal oben in der Übung. Steht dort eine Zahl („27,5“), gibt es einen
-Knopf, der das Gewicht direkt übernimmt.
+## Nächstes Ziel und Notiz
+
+Jede Übung hat zwei getrennte Felder:
+
+- **Nächstes Ziel** — entweder ein konkretes Gewicht, „halten“ oder
+  „steigern“. Beim nächsten Training steht es oben in der Übung, mit einem
+  Knopf, der das Gewicht direkt übernimmt. Darunter zeigt die App, ob das
+  eingestellte Gewicht das Ziel trifft, darüber oder darunter liegt.
+- **Notiz** — reiner Freitext für Beobachtungen („Rolle 1“, „links zwickt“).
+  Sie wird nicht mehr als Gewicht gedeutet.
+
+Beide werden mit der Einheit gespeichert und tauchen in Export und Auswertung
+auf.
+
+## Wochenziele
+
+In der Auswertung stehen zwei getrennte Ziele: Krafttraining (Vorgabe 2× pro
+Woche) und Alltagsbewegung (Vorgabe 3×). Die Tabelle zeigt jede Kalenderwoche
+einzeln als Soll/Ist — auch Wochen, in denen nichts stattgefunden hat. Wird ein
+Ziel geändert, gilt das **ab der laufenden Woche**; abgeschlossene Wochen
+behalten das Ziel, das damals galt.
 
 Die Reihenfolge der Übungen lässt sich über „Reihenfolge ändern“ anpassen und
 wird gespeichert.
@@ -63,11 +85,21 @@ unabhängig vom Ordner — als zweite Sicherung, nicht als erste.
 **Vor jedem Push prüfen:** `git status --untracked-files=all` zeigt, was
 tatsächlich mitgeht.
 
+## Datenformat und einmalige Korrekturen
+
+Der Datenbestand trägt eine Formatnummer (`meta.schema`). Startet die App mit
+einem älteren Stand, hebt sie ihn **einmalig** an und schreibt vorher einen
+Schnappschuss „vor der Datenkorrektur“. Was geändert wurde, steht danach in der
+Karte *Daten & Sicherung*.
+
+Grundsatz dabei: aus „weiß ich nicht“ darf nie „nein“ werden. Warm-up kennt
+deshalb drei Zustände — ja, nein und keine Angabe.
+
 ## Offene Punkte
 
 - [ ] Auf dem iPhone prüfen, ob die Statusleiste in beiden Modi lesbar ist
-- [ ] In der App einmal „Trainings am selben Tag zusammenführen“ antippen
-      (19.08. und 04.09. bestehen aus je zwei Teil-Einträgen)
+- [ ] Anforderung 1 (Wechsel Lat-Zug / unterstützter Klimmzug), 5 (inverse
+      Gewichtslogik) und 7 (doppelte Progression) aus dem Lastenheft stehen noch aus
 
 ## Dateien
 
@@ -77,6 +109,7 @@ tatsächlich mitgeht.
 | `manifest.webmanifest` | Macht die App zur "PWA": Name und Icon für den Homescreen |
 | `sw.js` | Service Worker — sorgt dafür, dass die App offline funktioniert |
 | `auswertung.html` | Auswertung am MacBook: Backup-Datei öffnen, Verlauf ansehen, drucken. Liest nur, schreibt nie |
+| `LASTENHEFT.md` | Anforderungen als Ist/Problem/Soll. Bleibt lokal (enthält Trainingsdaten als Belege) |
 | `icons/` | App-Icons für Homescreen und Browser-Tab |
 | `archiv/tracker-alt.html` | Die ursprüngliche Einzeldatei, unverändert als Sicherung |
 | `../fit@cosmo-daten/` | Deine Sicherungen und Exporte — bewusst außerhalb des Projekts |

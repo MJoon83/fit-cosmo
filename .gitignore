@@ -16,5 +16,9 @@ training-*.md
 *.csv
 Text.txt
 
+# Lastenheft: enthaelt Trainingsdaten als Belege (Daten, Gewichte, Notizen).
+# Bleibt lokal, bis Martin entscheidet, ob es veroeffentlicht werden soll.
+LASTENHEFT.md
+
 # macOS
 .DS_Store

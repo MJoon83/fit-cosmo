@@ -1,7 +1,7 @@
 // Service Worker: legt die App-Dateien im Gerät ab, damit sie offline startet.
 // WICHTIG: nach jeder Änderung an index.html die Versionsnummer hochzählen,
 // sonst zeigt die installierte App weiter die alte Version.
-const CACHE = 'fitcosmo-v6';
+const CACHE = 'fitcosmo-v7';
 
 const ASSETS = [
   './',

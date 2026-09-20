@@ -353,6 +353,69 @@
   .hlist th:first-child { text-align: left; }
   .hlist td { padding: 6px; border-top: 1px solid var(--line); text-align: right; }
   .hlist td:first-child { text-align: left; color: var(--ink-faint); white-space: nowrap; }
+
+  /* ---- Naechstes Ziel je Uebung ---- */
+  .seg { display: flex; gap: 6px; }
+  .seg button {
+    flex: 1; height: 40px; border-radius: 10px; cursor: pointer; padding: 0 2px;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-dim);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+  }
+  .seg button.on { background: var(--ready-bg); border-color: var(--ready-line); color: var(--ready); }
+  .tgt-kg { display: none; align-items: center; gap: 10px; margin-top: 8px; }
+  .tgt-kg.show { display: flex; }
+  .tgt-kg input {
+    flex: 1; height: var(--tap); text-align: center;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 10px; font-size: 18px; font-weight: 600; font-family: inherit;
+  }
+  .tgt-kg input:focus { outline: none; border-color: var(--brand); }
+  .tgt-kg .unit { font-size: 13px; color: var(--ink-dim); }
+  .memo .note-txt { flex-basis: 100%; font-size: 12px; color: var(--ink-dim); }
+  .memo .state { flex-basis: 100%; font-size: 12px; font-weight: 600; }
+
+  /* ---- Alltagsbewegung ---- */
+  .txt-input {
+    width: 100%; height: var(--tap); background: var(--surface-2);
+    border: 1px solid var(--line); color: var(--ink); border-radius: 10px;
+    padding: 0 12px; font-size: 14px; font-family: inherit;
+  }
+  .txt-input:focus { outline: none; border-color: var(--brand); }
+  .txt-input::placeholder { color: var(--ink-faint); }
+  body.move-view .save-bar { display: none; }
+  body.move-view .wrap { padding-bottom: 28px; }
+  .tabs .tab { font-size: 13px; padding: 0 2px; }
+  .row-del {
+    background: none; border: none; cursor: pointer; color: var(--ink-faint);
+    font-family: inherit; font-size: 12px; padding: 0 2px;
+  }
+
+  /* ---- Wochenziele ---- */
+  .weeks { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .weeks th {
+    font-size: 10px; color: var(--ink-faint); text-transform: uppercase;
+    letter-spacing: 0.06em; text-align: center; padding: 0 4px 6px; font-weight: 600;
+  }
+  .weeks th:first-child { text-align: left; }
+  .weeks td { padding: 7px 4px; border-top: 1px solid var(--line); text-align: center; }
+  .weeks td:first-child { text-align: left; color: var(--ink-faint); white-space: nowrap; }
+  .weeks .hit { color: var(--ok); font-weight: 700; }
+  .weeks .miss { color: var(--ink-dim); }
+  .weeks .zero { color: var(--accent); font-weight: 700; }
+  .weeks tr.now td { background: var(--surface-2); }
+  .goal-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; }
+  .goal-row + .goal-row { border-top: 1px solid var(--line); }
+  .goal-row .gl { flex: 1; font-size: 14px; font-weight: 600; }
+  .goal-row .gv { font-size: 16px; font-weight: 700; min-width: 52px; text-align: center; }
+  .goal-row button {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+    font-size: 18px; font-family: inherit;
+  }
+  .cal .d.walk { background: var(--ready-bg); color: var(--ready); font-weight: 600; }
+  .cal .d.hit.walk { background: var(--accent); color: var(--on-accent); outline: 2px solid var(--ready); outline-offset: -2px; }
+  .cal-key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--ink-faint); padding: 2px 15px 0; }
+  .cal-key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 </style>
 </head>
 <body>
@@ -365,6 +428,7 @@
 
   <div class="tabs">
     <button class="tab active" data-view="train">Training</button>
+    <button class="tab" data-view="move">Bewegung</button>
     <button class="tab" data-view="body">Körper</button>
     <button class="tab" data-view="stats">Auswertung</button>
   </div>
@@ -414,6 +478,7 @@
       <div class="body" id="dataBody" hidden>
         <div class="hint" id="backupHint"></div>
         <div class="hint" id="recoverHint"></div>
+        <div class="hint" id="migrateHint"></div>
 
         <div class="field-label">Backup-Datei</div>
         <div class="btn-row">
@@ -448,6 +513,51 @@
     <footer>
       Daten liegen nur auf diesem Gerät — regelmäßig Backup speichern.
     </footer>
+  </div>
+
+  <!-- ================= BEWEGUNG ================= -->
+  <div id="viewMove" hidden>
+    <div class="card">
+      <div class="card-head">
+        <div class="num">🚶</div>
+        <div class="card-title">
+          <div class="name">Bewegung eintragen</div>
+          <div class="meta" id="moveMeta">—</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="date-row" style="margin-top:12px;">
+          <span>Datum</span>
+          <input type="date" id="mvDate">
+        </div>
+
+        <div class="field-label">Strecke</div>
+        <select class="sel" id="mvRoute"><option value="">— neue Strecke —</option></select>
+        <input class="txt-input" id="mvName" style="margin-top:8px;" autocomplete="off"
+               placeholder="Name, z.B. Waldrunde sonntags">
+
+        <div class="field-label">Werte — alles freiwillig</div>
+        <div class="grid2">
+          <div class="fld"><div class="lbl">Schritte</div><input id="mv-steps" type="text" inputmode="numeric" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Strecke km</div><input id="mv-km" type="text" inputmode="decimal" autocomplete="off" placeholder="—"></div>
+          <div class="fld"><div class="lbl">Dauer min</div><input id="mv-min" type="text" inputmode="numeric" autocomplete="off" placeholder="—"></div>
+        </div>
+
+        <textarea class="note-input" id="mv-note" rows="2" placeholder="Notiz, z.B. zügig, kalt …"></textarea>
+        <button class="btn-exsave" id="mvSave" type="button">Bewegung speichern</button>
+        <p class="fineprint">Leere Felder werden übersprungen — ein Datum genügt. Die Schrittzahl
+          steht in der Fitness-App auf dem iPhone und muss von Hand übertragen werden;
+          eine Web-App kommt an Apple Health nicht heran.</p>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:22px;">Diese Woche</div>
+    <div class="card"><div class="body" style="border-top:none; padding-top:14px;" id="mvWeek"></div></div>
+
+    <div class="section-label" style="margin-top:22px;">Zuletzt</div>
+    <div class="card"><div class="body" style="border-top:none; padding-top:14px;">
+      <div class="hlist" id="mvList"></div>
+    </div></div>
   </div>
 
   <!-- ================= KÖRPER ================= -->
@@ -509,7 +619,34 @@
         <button class="cal-nav" id="calNext" type="button" aria-label="Monat vor">›</button>
       </div>
       <div class="cal" id="calGrid"></div>
+      <div class="cal-key" id="calKey"></div>
       <div class="legend" id="calSummary"></div>
+    </div>
+
+    <div class="section-label" style="margin-top:22px;">Wochenziele</div>
+    <div class="card">
+      <div class="body" style="border-top:none; padding-top:12px;">
+        <div class="goal-row">
+          <div class="gl">Krafttraining</div>
+          <button type="button" data-goal="gym" data-d="-1">−</button>
+          <div class="gv" id="goalGym">2×</div>
+          <button type="button" data-goal="gym" data-d="1">+</button>
+        </div>
+        <div class="goal-row">
+          <div class="gl">Alltagsbewegung</div>
+          <button type="button" data-goal="move" data-d="-1">−</button>
+          <div class="gv" id="goalMove">3×</div>
+          <button type="button" data-goal="move" data-d="1">+</button>
+        </div>
+        <p class="fineprint">Eine Änderung gilt ab der laufenden Woche. Abgeschlossene Wochen
+          behalten das Ziel, das damals galt.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="body" style="border-top:none; padding-top:14px;">
+        <div id="weekTable"></div>
+      </div>
+      <div class="legend" id="weekSummary"></div>
     </div>
 
     <div class="section-label" style="margin-top:22px;">Gewicht &amp; Wiederholungen</div>
@@ -558,9 +695,20 @@ const BODY_FIELDS = [
   { id:'thigh',    el:'b-thigh',    label:'Oberschenkel',  unit:'cm' },
 ];
 
+const MOVE_FIELDS = [
+  { id:'steps', el:'mv-steps', label:'Schritte', unit:'',    int:true  },
+  { id:'km',    el:'mv-km',    label:'Strecke',  unit:'km',  int:false },
+  { id:'min',   el:'mv-min',   label:'Dauer',    unit:'min', int:true  },
+];
+
 const STORE_KEY  = 'fitcosmo_training_v2';
 const LEGACY_KEY = 'martin_training_v1';
 const BACKUP_DUE_DAYS = 14;
+
+/* Stand des Datenformats. Wird beim Start geprueft; aeltere Staende werden
+   einmalig angehoben (siehe migrate()). */
+const SCHEMA = 4;
+const DEFAULT_GOALS = { gym: 2, move: 3 };
 
 /* ============================================================
    Speicher: localStorage (sofort) + IndexedDB (Spiegel)
@@ -568,7 +716,9 @@ const BACKUP_DUE_DAYS = 14;
 const DB_NAME = 'fitcosmo', DB_VERSION = 1, STATE_STORE = 'state', SNAP_STORE = 'snapshots';
 const MAX_SNAPSHOTS = 30;
 
-function emptyData() { return { sessions: [], current: {}, health: [], order: [], steps: {}, meta: {} }; }
+function emptyData() {
+  return { sessions: [], current: {}, health: [], moves: [], routes: [], goals: {}, order: [], steps: {}, meta: {} };
+}
 
 function normalize(d) {
   const base = emptyData();
@@ -576,6 +726,9 @@ function normalize(d) {
   base.sessions = Array.isArray(d.sessions) ? d.sessions : [];
   base.current  = (d.current && typeof d.current === 'object') ? d.current : {};
   base.health   = Array.isArray(d.health) ? d.health : [];
+  base.moves    = Array.isArray(d.moves) ? d.moves : [];
+  base.routes   = Array.isArray(d.routes) ? d.routes : [];
+  base.goals    = (d.goals && typeof d.goals === 'object') ? d.goals : {};
   base.order    = Array.isArray(d.order) ? d.order : [];
   base.steps    = (d.steps && typeof d.steps === 'object') ? d.steps : {};
   base.meta     = (d.meta && typeof d.meta === 'object') ? d.meta : {};
@@ -591,8 +744,24 @@ function loadLocal() {
 
 let data = loadLocal();
 
+/* Eintraege in "current", die keinen einzigen Wert tragen, gehoeren nicht in
+   den Bestand. Sonst entstehen beim blossen Oeffnen der App leere Objekte -
+   und die Frage "laeuft gerade eine Einheit?" ist nicht mehr beantwortbar. */
+function pruneCurrent() {
+  Object.keys(data.current).forEach(k => {
+    if (!EX_BY_ID[k]) return;
+    const c = data.current[k];
+    if (!c || typeof c !== 'object') { delete data.current[k]; return; }
+    const filled = c.s1 != null || c.s2 != null || c.s3 != null ||
+                   c.weight != null || c.done || c.target ||
+                   String(c.note || '').trim() !== '';
+    if (!filled) delete data.current[k];
+  });
+}
+
 let storageWarned = false;
 function save() {
+  pruneCurrent();
   data.meta.updatedAt = new Date().toISOString();
   const json = JSON.stringify(data);
   try {
@@ -664,7 +833,11 @@ function idbDelete(store, key) {
 }
 
 function snapshot(reason) {
-  const rec = { ts: new Date().toISOString(), reason: reason, count: data.sessions.length, json: JSON.stringify(data) };
+  return snapshotJson(JSON.stringify(data), reason, data.sessions.length);
+}
+
+function snapshotJson(json, reason, count) {
+  const rec = { ts: new Date().toISOString(), reason: reason, count: count, json: json };
   return idbPut(SNAP_STORE, rec)
     .then(() => idbAll(SNAP_STORE))
     .then(all => {
@@ -703,6 +876,136 @@ function downloadFile(name, text, mime) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* HTML-Sonderzeichen in Freitexten entschaerfen */
+function esc(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* Deutsche Kommazahl aus einem Textfeld lesen. Gibt null zurueck, wenn nichts
+   Brauchbares drinsteht - ein leeres Feld ist kein Nullwert. */
+function readNum(str, asInt) {
+  const v = String(str == null ? '' : str).trim().replace(',', '.').replace(/[^0-9.\-]/g, '');
+  if (v === '') return null;
+  const n = parseFloat(v);
+  if (isNaN(n)) return null;
+  return asInt ? Math.round(n) : Math.round(n * 100) / 100;
+}
+
+/* ============================================================
+   Wochen. Die Woche beginnt am Montag.
+   ============================================================ */
+function addDays(iso, n) {
+  const d = dayDate(iso);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function mondayOf(iso) {
+  const d = dayDate(iso);
+  return addDays(iso, -((d.getDay() + 6) % 7));
+}
+function weekNo(iso) {
+  const d = dayDate(iso);
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  t.setDate(t.getDate() + 3 - ((t.getDay() + 6) % 7));
+  const first = new Date(t.getFullYear(), 0, 4);
+  return 1 + Math.round(((t - first) / 86400000 - 3 + ((first.getDay() + 6) % 7)) / 7);
+}
+
+/* ============================================================
+   Wochenziele. Ein Ziel gilt ab einem Datum; aeltere Wochen behalten
+   das Ziel, das damals galt (sonst wuerde eine Aenderung die
+   Vergangenheit umschreiben).
+   ============================================================ */
+function goalList(kind) {
+  if (!Array.isArray(data.goals[kind])) data.goals[kind] = [];
+  return data.goals[kind];
+}
+function goalAt(kind, iso) {
+  let v = DEFAULT_GOALS[kind];
+  goalList(kind).slice()
+    .sort((a, b) => (a.from < b.from ? -1 : 1))
+    .forEach(g => { if (g.from <= iso && typeof g.value === 'number') v = g.value; });
+  return v;
+}
+function setGoal(kind, value) {
+  if (value < 0) value = 0;
+  if (value > 14) value = 14;
+  const from = mondayOf(todayISO());
+  const list = goalList(kind);
+  const i = list.findIndex(g => g.from === from);
+  if (i >= 0) list[i].value = value; else list.push({ from: from, value: value });
+  list.sort((a, b) => (a.from < b.from ? -1 : 1));
+  save();
+}
+
+function moveDays() { return [...new Set(data.moves.map(m => m.date))].sort(); }
+
+/* Eine Zeile je Kalenderwoche, von der ersten Aktivitaet bis heute -
+   auch fuer Wochen, in denen nichts stattgefunden hat. */
+function weekRows() {
+  const gym = trainingDays(data.sessions);
+  const mov = moveDays();
+  const all = gym.concat(mov).filter(Boolean).sort();
+  const today = todayISO();
+  const nowMonday = mondayOf(today);
+  let m = all.length ? mondayOf(all[0]) : nowMonday;
+  if (m > nowMonday) m = nowMonday;
+  const rows = [];
+  for (let guard = 0; m <= nowMonday && guard < 520; guard++, m = addDays(m, 7)) {
+    const end = addDays(m, 6);
+    rows.push({
+      monday: m, sunday: end, week: weekNo(m),
+      gym:  gym.filter(d => d >= m && d <= end).length,
+      move: mov.filter(d => d >= m && d <= end).length,
+      gymGoal:  goalAt('gym', m),
+      moveGoal: goalAt('move', m),
+      running: m === nowMonday,
+    });
+  }
+  return rows;
+}
+
+/* ============================================================
+   Naechstes Ziel je Uebung: Gewicht, "halten" oder "steigern".
+   ============================================================ */
+function targetWeight(id, t, lastW) {
+  if (!t) return null;
+  if (t.kind === 'weight') return typeof t.kg === 'number' ? t.kg : null;
+  if (lastW == null) return null;
+  if (t.kind === 'up')   return lastW + stepOf(id);
+  if (t.kind === 'hold') return lastW;
+  return null;
+}
+function targetText(id, t, lastW) {
+  if (!t) return '';
+  if (t.kind === 'weight') return typeof t.kg === 'number' ? fmt(t.kg) + ' kg' : 'Gewicht';
+  const w = targetWeight(id, t, lastW);
+  if (t.kind === 'up')   return 'steigern' + (w != null ? ` — auf ${fmt(w)} kg` : '');
+  if (t.kind === 'hold') return 'halten'   + (w != null ? ` — ${fmt(w)} kg` : '');
+  return '';
+}
+
+/* Aus einer alten Notiz ein Ziel ableiten. Nur fuer die einmalige Umstellung;
+   im laufenden Betrieb wird die Notiz nicht mehr gedeutet.
+   Zahlen, die zu einer Geraeteeinstellung gehoeren ("Rolle 1"), und sehr
+   kleine Zahlen gelten nicht als Gewicht. */
+function targetFromNote(note) {
+  const t = String(note || '').trim();
+  if (!t) return null;
+  const low = t.toLowerCase();
+  const isSetting = /(rolle|sitz|polster|ger(ä|ae)t|stufe|loch|position)\s*\d/i.test(t);
+  const m = t.replace(',', '.').match(/(\d+(?:\.\d+)?)\s*(kg)?/i);
+  if (m && !isSetting) {
+    const n = parseFloat(m[1]);
+    if (!isNaN(n) && (n >= 5 || /kg/i.test(m[2] || ''))) return { kind: 'weight', kg: n };
+  }
+  if (/(mehr|h(ö|oe)her|steiger|hoch|rauf|next)/.test(low)) return { kind: 'up' };
+  if (/(bleib|lassen|gleich|halten|nochmal|wie gehabt|selbe)/.test(low)) return { kind: 'hold' };
+  return null;
+}
+
 /* Reihenfolge: gespeicherte zuerst, neue Übungen hinten anhängen */
 function exerciseIds() {
   const all = EXERCISES.map(e => e.id);
@@ -725,6 +1028,114 @@ function lastEntry(id) {
     if (e && (e.weight != null || e.s1 != null)) return { date: sorted[i].date, entry: e };
   }
   return null;
+}
+
+/* ============================================================
+   Einmalige Datenkorrektur
+   ----------------------------------------------------------
+   Laeuft genau einmal, erkennbar an data.meta.schema. Vorher wird der
+   alte Stand als Schnappschuss gesichert; was geaendert wurde, steht
+   danach in data.meta.migrationLog und wird in der Karte "Daten &
+   Sicherung" angezeigt.
+
+   Grundsatz: aus "weiss ich nicht" darf niemals "nein" werden.
+   ============================================================ */
+
+/* Obergrenze des Korridors. Mehr ist im Plan nicht vorgesehen. */
+const REPS_MAX = 12;
+
+function migrate() {
+  const log = [];
+
+  /* 1. Warm-up bekommt drei Zustaende: ja, nein, keine Angabe (null).
+        Die alten Einheiten trugen stattdessen einen cardio-Block. Stehen
+        dort Minuten, Puls oder Watt, hat das Warm-up stattgefunden.
+        Ein "nein" ohne jeden Beleg stammt aus der Umstellung vom 19.09.
+        und war nie erhoben - es wird zu "keine Angabe". */
+  let toYes = 0, toUnknown = 0;
+  data.sessions.forEach(sess => {
+    const c = sess.cardio || null;
+    const belegt = !!c && (c['warm-min'] != null || c['warm-hr'] != null || c['warm-w'] != null);
+    if (sess.warmup === true) return;
+    if (belegt) { sess.warmup = true; toYes++; return; }
+    if (sess.warmup === false && !c) { sess.warmup = null; toUnknown++; return; }
+    if (sess.warmup === undefined)   { sess.warmup = null; toUnknown++; }
+  });
+  if (toYes)     log.push(`Warm-up auf „ja“ gesetzt, weil Minuten oder Puls verzeichnet sind: ${toYes} ${toYes === 1 ? 'Einheit' : 'Einheiten'}.`);
+  if (toUnknown) log.push(`Warm-up auf „keine Angabe“ zurückgesetzt, weil der Status nie erhoben wurde: ${toUnknown} ${toUnknown === 1 ? 'Einheit' : 'Einheiten'}.`);
+
+  /* 2. Mobility einheitlich lesbar machen: null heisst "damals nicht
+        erfasst", ein leeres Objekt heisst "erfasst, nichts abgehakt".
+        Der alte cardio-Block bleibt unangetastet - er ist der Beleg. */
+  let mob = 0;
+  data.sessions.forEach(sess => {
+    if (!('mobility' in sess)) { sess.mobility = null; mob++; }
+    if (typeof sess.mobilityNote !== 'string') sess.mobilityNote = '';
+  });
+  if (mob) log.push(`${mob} ältere ${mob === 1 ? 'Einheit' : 'Einheiten'} als „Mobility nicht erfasst“ gekennzeichnet, statt sie als leer zu zählen.`);
+
+  /* 3. Zielgewichte aus den alten Notizen ziehen. Die Notiz bleibt
+        unveraendert stehen - nichts geht verloren. */
+  let tgt = 0;
+  data.sessions.forEach(sess => {
+    Object.keys(sess.entries || {}).forEach(id => {
+      const e = sess.entries[id];
+      if (!e || e.target !== undefined) return;
+      const t = targetFromNote(e.note);
+      if (t) { e.target = t; tgt++; } else { e.target = null; }
+    });
+  });
+  if (tgt) log.push(`${tgt} Notizen als „nächstes Ziel“ übernommen. Der Notiztext bleibt zusätzlich erhalten.`);
+
+  /* 4. Wiederholungen oberhalb des Korridors richtigstellen. Sie stammen aus
+        der Zeit ohne Eingabepruefung und sind Vertipper - 15 statt 12. Was
+        genau betroffen war, steht im Protokoll; der Ursprungswert bleibt im
+        Schnappschuss. Seit dieser Fassung fragt die App beim Speichern nach,
+        bevor so ein Wert ueberhaupt entsteht. */
+  const zuHoch = [];
+  data.sessions.forEach(sess => {
+    Object.keys(sess.entries || {}).forEach(id => {
+      const e = sess.entries[id];
+      if (!e) return;
+      ['s1', 's2', 's3'].forEach(f => {
+        if (typeof e[f] === 'number' && e[f] > REPS_MAX) {
+          const name = EX_BY_ID[id] ? EX_BY_ID[id].name : id;
+          zuHoch.push(`${fmtDate(sess.date)}${String(sess.date).slice(0, 4)} ${name}: ${e[f]}`);
+          e[f] = REPS_MAX;
+        }
+      });
+    });
+  });
+  if (zuHoch.length) log.push(`${zuHoch.length} ${zuHoch.length === 1 ? 'Wiederholungszahl' : 'Wiederholungszahlen'} über ${REPS_MAX} auf ${REPS_MAX} korrigiert (${zuHoch.join(' · ')}).`);
+
+  /* 5. Leere Uebungs-Eintraege im laufenden Training entfernen. */
+  const leer = Object.keys(data.current).filter(k => {
+    const c = data.current[k];
+    return EX_BY_ID[k] && c && typeof c === 'object' && Object.keys(c).length === 0;
+  }).length;
+  if (leer) log.push(`${leer} leere Übungs-Einträge im laufenden Training entfernt.`);
+
+  /* 6. Wochenziele festschreiben, damit sie im Backup sichtbar sind. */
+  if (!goalList('gym').length)  { goalList('gym').push({ from: '1970-01-01', value: DEFAULT_GOALS.gym }); }
+  if (!goalList('move').length) { goalList('move').push({ from: '1970-01-01', value: DEFAULT_GOALS.move }); }
+
+  return log;
+}
+
+function runMigration() {
+  const from = typeof data.meta.schema === 'number' ? data.meta.schema : 0;
+  if (from >= SCHEMA) return;
+  const before = JSON.stringify(data);
+  const beforeCount = data.sessions.length;
+  const log = migrate();
+  data.meta.schema = SCHEMA;
+  if (log.length) {
+    data.meta.migratedAt = new Date().toISOString();
+    data.meta.migrationLog = log;
+    data.meta.migrationSeen = false;
+    snapshotJson(before, 'vor der Datenkorrektur', beforeCount);
+  }
+  save();
 }
 
 /* ============================================================
@@ -792,8 +1203,21 @@ function renderExercises() {
 
         <div class="hint" id="hint-${ex.id}"></div>
 
-        <textarea class="note-input" rows="2" id="note-${ex.id}"
-                  placeholder="Fürs nächste Mal, z.B. 27,5 oder „nochmal“ …">${c.note || ''}</textarea>
+        <div class="field-label">Nächstes Ziel</div>
+        <div class="seg" id="seg-${ex.id}">
+          <button type="button" data-t="none"   data-id="${ex.id}">kein Ziel</button>
+          <button type="button" data-t="hold"   data-id="${ex.id}">halten</button>
+          <button type="button" data-t="up"     data-id="${ex.id}">steigern</button>
+          <button type="button" data-t="weight" data-id="${ex.id}">Gewicht</button>
+        </div>
+        <div class="tgt-kg" id="tgt-${ex.id}">
+          <input type="text" inputmode="decimal" autocomplete="off" id="tkg-${ex.id}" placeholder="—">
+          <span class="unit">kg fürs nächste Mal</span>
+        </div>
+
+        <div class="field-label">Notiz</div>
+        <textarea class="note-input" rows="2" id="note-${ex.id}" style="margin-top:0;"
+                  placeholder="Freitext, z.B. „Rolle 1“ oder „links zwickt“ …">${esc(c.note || '')}</textarea>
 
         <button class="btn-exsave" type="button" data-save="${ex.id}">Übung speichern</button>
 
@@ -803,6 +1227,7 @@ function renderExercises() {
     `;
     container.appendChild(card);
     renderLastLine(ex.id);
+    renderTarget(ex.id);
     renderMemo(ex.id);
     updateHint(ex.id);
     renderSummary(ex.id);
@@ -820,21 +1245,77 @@ function renderLastLine(id) {
   el.innerHTML = `Zuletzt am ${fmtDate(last.date)} <b>${e.weight == null ? '?' : fmt(e.weight)} kg</b> · ${reps}`;
 }
 
-/* Notiz der letzten Einheit sichtbar machen — dort steht die Progression */
+/* Oben in der Übung steht, was beim letzten Mal fürs nächste Mal
+   vorgemerkt wurde: das Ziel, und getrennt davon die Notiz. */
 function renderMemo(id) {
   const box = document.getElementById('memo-' + id);
   if (!box) return;
   const last = lastEntry(id);
-  const note = last && last.entry.note ? String(last.entry.note).trim() : '';
-  if (!note) { box.className = 'memo'; box.innerHTML = ''; return; }
+  if (!last) { box.className = 'memo'; box.innerHTML = ''; return; }
 
-  const m = note.replace(',', '.').match(/^(\d+(?:\.\d+)?)\s*(kg)?$/i);
-  const target = m ? parseFloat(m[1]) : null;
+  const t = last.entry.target || null;
+  const note = last.entry.note ? String(last.entry.note).trim() : '';
+  if (!t && !note) { box.className = 'memo'; box.innerHTML = ''; return; }
+
+  const tw = targetWeight(id, t, last.entry.weight);
+  const head = t
+    ? `Ziel vom ${fmtDate(last.date)}: <strong>${targetText(id, t, last.entry.weight)}</strong>`
+    : `Notiz vom ${fmtDate(last.date)}`;
+
   box.className = 'memo show';
-  box.innerHTML = `
-    <div class="txt">Vorgemerkt am ${fmtDate(last.date)}: <strong>${note}</strong></div>
-    ${target != null ? `<button type="button" data-apply="${id}" data-target="${target}">auf ${fmt(target)} kg</button>` : ''}
-  `;
+  box.innerHTML =
+    `<div class="txt">${head}</div>` +
+    (tw != null ? `<button type="button" data-apply="${id}" data-target="${tw}">auf ${fmt(tw)} kg</button>` : '') +
+    (note ? `<div class="note-txt">Notiz: ${esc(note)}</div>` : '') +
+    `<div class="state" id="tstate-${id}"></div>`;
+  updateTargetState(id);
+}
+
+/* Nach dem Übernehmen sichtbar machen, ob das Ziel getroffen wurde. */
+function updateTargetState(id) {
+  const el = document.getElementById('tstate-' + id);
+  if (!el) return;
+  const last = lastEntry(id);
+  const t = last && last.entry.target;
+  const tw = t ? targetWeight(id, t, last.entry.weight) : null;
+  const w = weights[id];
+  if (tw == null || w == null) { el.innerHTML = ''; return; }
+  const d = Math.round((w - tw) * 100) / 100;
+  if (d === 0)     el.innerHTML = '<span style="color:var(--ok)">Ziel erreicht</span>';
+  else if (d > 0)  el.innerHTML = `<span style="color:var(--ok)">über dem Ziel, +${fmt(d)} kg</span>`;
+  else             el.innerHTML = `<span style="color:var(--ink-dim)">unter dem Ziel, −${fmt(Math.abs(d))} kg</span>`;
+}
+
+/* Zielfeld der laufenden Übung anzeigen */
+function renderTarget(id) {
+  const c = cur(id);
+  const seg = document.getElementById('seg-' + id);
+  const box = document.getElementById('tgt-' + id);
+  const inp = document.getElementById('tkg-' + id);
+  if (!seg || !box || !inp) return;
+  const kind = c.target ? c.target.kind : 'none';
+  seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.getAttribute('data-t') === kind));
+  box.classList.toggle('show', kind === 'weight');
+  if (kind === 'weight' && c.target && typeof c.target.kg === 'number') {
+    if (document.activeElement !== inp) inp.value = fmt(c.target.kg);
+  }
+}
+
+function setTargetKind(id, kind) {
+  const c = cur(id);
+  if (kind === 'none') c.target = null;
+  else if (kind === 'weight') {
+    const inp = document.getElementById('tkg-' + id);
+    let kg = inp ? readNum(inp.value) : null;
+    if (kg == null) {
+      const w = weights[id];
+      kg = w != null ? w + stepOf(id) : null;
+      if (inp && kg != null) inp.value = fmt(kg);
+    }
+    c.target = { kind: 'weight', kg: kg };
+  } else c.target = { kind: kind };
+  save();
+  renderTarget(id);
 }
 
 function setWeight(id, v) {
@@ -844,6 +1325,7 @@ function setWeight(id, v) {
   const bd = document.getElementById('badge-' + id);
   if (wv) wv.textContent = fmt(v);
   if (bd) bd.textContent = fmt(v) + ' kg';
+  updateTargetState(id);
   stashCurrent(id);
 }
 
@@ -856,6 +1338,10 @@ function stashCurrent(id) {
   });
   const note = document.getElementById('note-' + id);
   if (note) c.note = note.value;
+  if (c.target && c.target.kind === 'weight') {
+    const ti = document.getElementById('tkg-' + id);
+    if (ti) c.target.kg = readNum(ti.value);
+  }
   save();
 }
 
@@ -928,7 +1414,9 @@ function toggleHistory(id) {
     if (e && (e.s1 != null || e.weight != null)) {
       const reps = [e.s1, e.s2, e.s3].map(x => (x == null ? '–' : x)).join(' / ');
       const note = e.note ? String(e.note).trim() : '';
-      rows.push(`<tr><td>${fmtDate(sess.date)}</td><td>${e.weight == null ? '' : fmt(e.weight)} kg</td><td>${reps}</td><td class="note">${note}</td></tr>`);
+      const tgt = e.target ? targetText(id, e.target, e.weight) : '';
+      const rest = [tgt ? 'Ziel: ' + tgt : '', note].filter(Boolean).join(' · ');
+      rows.push(`<tr><td>${fmtDate(sess.date)}</td><td>${e.weight == null ? '' : fmt(e.weight)} kg</td><td>${reps}</td><td class="note">${esc(rest)}</td></tr>`);
     }
   });
   box.innerHTML = rows.length ? `<table>${rows.reverse().join('')}</table>` : 'Noch keine gespeicherten Einträge.';
@@ -943,6 +1431,9 @@ container.addEventListener('click', e => {
     setWeight(id, (weights[id] != null ? weights[id] : 0) + dir);
     return;
   }
+  const seg = e.target.closest('[data-t]');
+  if (seg) { setTargetKind(seg.getAttribute('data-id'), seg.getAttribute('data-t')); return; }
+
   const apply = e.target.closest('[data-apply]');
   if (apply) {
     const id = apply.getAttribute('data-apply');
@@ -956,6 +1447,11 @@ container.addEventListener('click', e => {
     stashCurrent(id);
     const c = cur(id);
     if (c.s1 == null && c.s2 == null && c.s3 == null) { toast('Noch keine Wiederholungen eingetragen'); return; }
+    const seltsam = [c.s1, c.s2, c.s3].filter(v => typeof v === 'number' && (v < 1 || v > 15));
+    if (seltsam.length && !confirm(
+      `Ungewöhnliche Wiederholungszahl: ${seltsam.join(', ')}.\n` +
+      `Der Korridor ist 8 bis 12 — mehr als 15 ist meist ein Vertipper.\n\nTrotzdem speichern?`
+    )) return;
     markDone(id, true);
     toast(EX_BY_ID[id].name + ' gespeichert ✓');
     setTimeout(() => scrollToNextOpen(id), 350);
@@ -973,7 +1469,7 @@ container.addEventListener('click', e => {
 
 container.addEventListener('input', e => {
   const t = e.target;
-  const m = t.id.match(/^(?:s[123]|note)-(.+)$/);
+  const m = t.id.match(/^(?:s[123]|note|tkg)-(.+)$/);
   if (!m) return;
   const id = m[1];
   stashCurrent(id);
@@ -1051,6 +1547,7 @@ document.getElementById('saveBtn').addEventListener('click', () => {
       s2: c.s2 != null ? c.s2 : null,
       s3: c.s3 != null ? c.s3 : null,
       note: c.note || '',
+      target: c.target || null,
     };
   });
 
@@ -1248,6 +1745,131 @@ function renderBodyList() {
 }
 
 /* ============================================================
+   Alltagsbewegung — zweite Aktivitätsart neben dem Gym.
+   Wird getrennt gezählt und geht in keine Kraft-Kennzahl ein.
+   ============================================================ */
+document.getElementById('mvDate').value = todayISO();
+
+function upsertRoute(name, km) {
+  const n = String(name || '').trim();
+  if (!n) return;
+  const found = data.routes.find(r => r.name.toLowerCase() === n.toLowerCase());
+  if (found) { if (km != null) found.km = km; }
+  else data.routes.push({ name: n, km: km != null ? km : null });
+  data.routes.sort((a, b) => a.name.localeCompare(b.name, 'de'));
+}
+
+function renderRoutes() {
+  const sel = document.getElementById('mvRoute');
+  const keep = sel.value;
+  sel.innerHTML = '<option value="">— neue Strecke —</option>' +
+    data.routes.map(r => `<option value="${esc(r.name)}">${esc(r.name)}${r.km != null ? ' · ' + fmt(r.km) + ' km' : ''}</option>`).join('');
+  sel.value = keep;
+}
+
+document.getElementById('mvRoute').addEventListener('change', e => {
+  const r = data.routes.find(x => x.name === e.target.value);
+  if (!r) return;
+  document.getElementById('mvName').value = r.name;
+  if (r.km != null) document.getElementById('mv-km').value = fmt(r.km);
+});
+
+document.getElementById('mvSave').addEventListener('click', () => {
+  const rec = { date: document.getElementById('mvDate').value || todayISO() };
+  let any = false;
+  MOVE_FIELDS.forEach(f => {
+    const v = readNum(document.getElementById(f.el).value, f.int);
+    if (v != null) { rec[f.id] = v; any = true; }
+  });
+  const name = document.getElementById('mvName').value.trim();
+  if (name) rec.name = name;
+  const note = document.getElementById('mv-note').value.trim();
+  if (note) rec.note = note;
+
+  if (!any && !name && !note) { toast('Nichts eingetragen — Datum allein genügt nicht'); return; }
+
+  data.moves.push(rec);
+  data.moves.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  if (name) upsertRoute(name, rec.km != null ? rec.km : null);
+  save();
+  snapshot('Bewegung gespeichert');
+
+  MOVE_FIELDS.forEach(f => { document.getElementById(f.el).value = ''; });
+  document.getElementById('mv-note').value = '';
+  document.getElementById('mvName').value = '';
+  document.getElementById('mvRoute').value = '';
+  renderMove();
+  toast('Bewegung gespeichert ✓');
+});
+
+function moveLine(m) {
+  const parts = [];
+  if (m.km    != null) parts.push(fmt(m.km) + ' km');
+  if (m.min   != null) parts.push(fmt(m.min) + ' min');
+  if (m.steps != null) parts.push(fmt(m.steps) + ' Schritte');
+  return parts.join(' · ');
+}
+
+function renderMove() {
+  const meta = document.getElementById('moveMeta');
+  if (!data.moves.length) meta.textContent = 'noch nichts eingetragen';
+  else {
+    const l = data.moves[data.moves.length - 1];
+    meta.textContent = `zuletzt ${fmtDate(l.date)}${l.name ? ' · ' + l.name : ''}`;
+  }
+  renderRoutes();
+
+  /* laufende Woche */
+  const rows = weekRows();
+  const w = rows[rows.length - 1];
+  const box = document.getElementById('mvWeek');
+  if (!w) { box.innerHTML = '<div class="empty-note" style="padding:0">Noch nichts erfasst.</div>'; }
+  else {
+    const fehltM = Math.max(0, w.moveGoal - w.move);
+    const fehltG = Math.max(0, w.gymGoal - w.gym);
+    box.innerHTML = `
+      <div class="hlist"><table>
+        <tr><td>Alltagsbewegung</td><td style="text-align:right"><b>${w.move} von ${w.moveGoal}</b></td></tr>
+        <tr><td>Krafttraining</td><td style="text-align:right"><b>${w.gym} von ${w.gymGoal}</b></td></tr>
+      </table></div>
+      <div class="legend" style="padding:10px 0 0;">KW ${w.week} · ${fmtDate(w.monday)}–${fmtDate(w.sunday)}${String(w.sunday).slice(0,4)} — die Woche läuft noch.
+        ${fehltM || fehltG ? 'Offen: ' + [fehltM ? fehltM + '× Bewegung' : '', fehltG ? fehltG + '× Gym' : ''].filter(Boolean).join(', ') + '.' : 'Beide Ziele erreicht.'}</div>`;
+  }
+
+  /* Liste */
+  const list = document.getElementById('mvList');
+  if (!data.moves.length) { list.innerHTML = '<div class="empty-note" style="padding:0">Noch keine Einträge.</div>'; return; }
+  list.innerHTML = data.moves.slice().reverse().slice(0, 30).map((m) => {
+    const i = data.moves.indexOf(m);
+    const vals = moveLine(m);
+    return `
+      <div style="padding:10px 0; border-top:1px solid var(--line); display:flex; gap:10px; align-items:flex-start;">
+        <div style="flex:1;">
+          <div style="color:var(--ink); font-size:13px;">${fmtDate(m.date)}${String(m.date).slice(0,4)}${m.name ? ' &nbsp; ' + esc(m.name) : ''}</div>
+          ${vals ? `<div style="margin-top:3px;">${vals}</div>` : ''}
+          ${m.note ? `<div style="margin-top:3px; color:var(--ready);">${esc(m.note)}</div>` : ''}
+        </div>
+        <button class="row-del" type="button" data-delmove="${i}">löschen</button>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('mvList').addEventListener('click', e => {
+  const b = e.target.closest('[data-delmove]');
+  if (!b) return;
+  const i = parseInt(b.getAttribute('data-delmove'), 10);
+  const m = data.moves[i];
+  if (!m) return;
+  if (!confirm(`Eintrag vom ${fmtDate(m.date)}${String(m.date).slice(0,4)} löschen?`)) return;
+  snapshot('vor dem Löschen einer Bewegung').then(() => {
+    data.moves.splice(i, 1);
+    save();
+    renderMove();
+    toast('Gelöscht');
+  });
+});
+
+/* ============================================================
    Export
    ============================================================ */
 function csvNum(v) { return v == null ? '' : String(v).replace('.', ','); }
@@ -1258,19 +1880,27 @@ function sortedSessions() {
 }
 
 function exportCSV() {
-  if (!data.sessions.length && !data.health.length) { toast('Noch nichts gespeichert'); return; }
+  if (!data.sessions.length && !data.health.length && !data.moves.length) { toast('Noch nichts gespeichert'); return; }
   const rows = [['Datum','Bereich','Bezeichnung','Wert','Satz1','Satz2','Satz3','Notiz']];
   sortedSessions().forEach(s => {
     if (s.warmup) rows.push([s.date, 'Warm-up', 'Crosstrainer 10 Min', 'ja', '', '', '', '']);
     exerciseIds().forEach(id => {
       const e = s.entries && s.entries[id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        rows.push([s.date, 'Kraft', EX_BY_ID[id].name, csvNum(e.weight), csvNum(e.s1), csvNum(e.s2), csvNum(e.s3), csvSafe(e.note)]);
+        const tgt = e.target ? ' [Ziel: ' + targetText(id, e.target, e.weight) + ']' : '';
+        rows.push([s.date, 'Kraft', EX_BY_ID[id].name, csvNum(e.weight), csvNum(e.s1), csvNum(e.s2), csvNum(e.s3), csvSafe(e.note) + tgt]);
       }
     });
     const m = s.mobility || {};
     MOBILITY.forEach(x => { if (m[x.id]) rows.push([s.date, 'Mobility', x.name, 'ja', '', '', '', '']); });
     if (s.mobilityNote) rows.push([s.date, 'Mobility', 'Notiz', '', '', '', '', csvSafe(s.mobilityNote)]);
+  });
+  data.moves.forEach(m => {
+    const bez = m.name ? 'Spaziergang: ' + m.name : 'Spaziergang';
+    MOVE_FIELDS.forEach(f => {
+      if (m[f.id] != null) rows.push([m.date, 'Bewegung', bez + ' — ' + f.label + (f.unit ? ' (' + f.unit + ')' : ''), csvNum(m[f.id]), '', '', '', csvSafe(m.note)]);
+    });
+    if (m.km == null && m.min == null && m.steps == null) rows.push([m.date, 'Bewegung', bez, 'ja', '', '', '', csvSafe(m.note)]);
   });
   data.health.forEach(h => {
     BODY_FIELDS.forEach(f => {
@@ -1283,7 +1913,7 @@ function exportCSV() {
 }
 
 function exportMD() {
-  if (!data.sessions.length && !data.health.length) { toast('Noch nichts gespeichert'); return; }
+  if (!data.sessions.length && !data.health.length && !data.moves.length) { toast('Noch nichts gespeichert'); return; }
   let md = '# Trainings-Verlauf\n\n';
   sortedSessions().forEach(s => {
     md += `## ${fmtDate(s.date)}${String(s.date).slice(0, 4)}\n\n`;
@@ -1292,16 +1922,25 @@ function exportMD() {
     exerciseIds().forEach(id => {
       const e = s.entries && s.entries[id];
       if (e && (e.s1 != null || e.s2 != null || e.s3 != null)) {
-        lines.push(`| ${EX_BY_ID[id].name} | ${e.weight == null ? '' : fmt(e.weight)} kg | ${e.s1 ?? ''} | ${e.s2 ?? ''} | ${e.s3 ?? ''} | ${e.note || ''} |`);
+        const tgt = e.target ? targetText(id, e.target, e.weight) : '';
+        lines.push(`| ${EX_BY_ID[id].name} | ${e.weight == null ? '' : fmt(e.weight)} kg | ${e.s1 ?? ''} | ${e.s2 ?? ''} | ${e.s3 ?? ''} | ${tgt} | ${e.note || ''} |`);
       }
     });
-    if (lines.length) md += '| Übung | Gewicht | S1 | S2 | S3 | Notiz |\n|---|---|---|---|---|---|\n' + lines.join('\n') + '\n\n';
+    if (lines.length) md += '| Übung | Gewicht | S1 | S2 | S3 | Nächstes Ziel | Notiz |\n|---|---|---|---|---|---|---|\n' + lines.join('\n') + '\n\n';
     const m = s.mobility || {};
     const done = MOBILITY.filter(x => m[x.id]).map(x => x.name);
     if (done.length) md += `**Mobility:** ${done.join(' · ')}\n\n`;
     if (s.mobilityNote) md += `*${s.mobilityNote}*\n\n`;
     md += '---\n\n';
   });
+  if (data.moves.length) {
+    md += '# Alltagsbewegung\n\n| Datum | Strecke | km | Dauer | Schritte | Notiz |\n|---|---|---|---|---|---|\n';
+    data.moves.forEach(m => {
+      const c = v => (typeof v === 'number' ? fmt(v) : '');
+      md += `| ${fmtDate(m.date)}${String(m.date).slice(0,4)} | ${m.name || ''} | ${c(m.km)} | ${c(m.min)} | ${c(m.steps)} | ${m.note || ''} |\n`;
+    });
+    md += '\n';
+  }
   if (data.health.length) {
     md += '# Körper\n\n| Datum | Gewicht | Körperfett | Brust | Hüfte | Oberarm | Oberschenkel |\n|---|---|---|---|---|---|---|\n';
     data.health.forEach(h => {
@@ -1360,6 +1999,24 @@ function renderDataCard() {
     hint.textContent = 'Sicherung ist aktuell.';
   }
 
+  const mig = document.getElementById('migrateHint');
+  const log = Array.isArray(data.meta.migrationLog) ? data.meta.migrationLog : [];
+  if (log.length && !data.meta.migrationSeen) {
+    mig.className = 'hint ready';
+    mig.innerHTML =
+      '<strong>Einmalige Datenkorrektur durchgeführt</strong><ul style="margin:6px 0 0; padding-left:18px;">' +
+      log.map(l => `<li>${esc(l)}</li>`).join('') +
+      '</ul><div style="margin-top:8px;">Der Stand davor liegt unten als Schnappschuss „vor der Datenkorrektur“.</div>' +
+      '<button class="btn-sec" type="button" id="migAck" style="margin-top:10px; width:100%;">Verstanden</button>';
+    const ack = document.getElementById('migAck');
+    if (ack) ack.addEventListener('click', () => {
+      data.meta.migrationSeen = true; save(); renderDataCard();
+    });
+  } else {
+    mig.className = 'hint';
+    mig.innerHTML = '';
+  }
+
   const dup = duplicateDates();
   if (dup.length) {
     hint.className = 'hint ready';
@@ -1370,9 +2027,13 @@ function renderDataCard() {
 async function saveBackup() {
   data.meta.lastBackup = new Date().toISOString();
   const json = JSON.stringify({
-    app: 'fit@cosmo Trainings-Tracker', format: 3,
+    app: 'fit@cosmo Trainings-Tracker', format: 4,
     exportedAt: new Date().toISOString(),
-    data: { sessions: data.sessions, current: data.current, health: data.health, order: data.order, steps: data.steps, meta: data.meta },
+    data: {
+      sessions: data.sessions, current: data.current, health: data.health,
+      moves: data.moves, routes: data.routes, goals: data.goals,
+      order: data.order, steps: data.steps, meta: data.meta,
+    },
   }, null, 2);
   const name = `training-backup-${todayISO()}.json`;
   let shared = false;
@@ -1411,7 +2072,7 @@ document.getElementById('restoreFile').addEventListener('change', async e => {
   try { parsed = JSON.parse(await file.text()); }
   catch (err) { toast('Datei nicht lesbar'); return; }
   const incoming = normalize(parsed && parsed.data ? parsed.data : parsed);
-  if (!incoming.sessions.length && !incoming.health.length) { toast('Keine Daten in der Datei'); return; }
+  if (!incoming.sessions.length && !incoming.health.length && !incoming.moves.length) { toast('Keine Daten in der Datei'); return; }
   const ok = confirm(
     `Backup enthält ${incoming.sessions.length} Trainings und ${incoming.health.length} Körpermessungen.\n` +
     `Aktuell in der App: ${data.sessions.length} / ${data.health.length}.\n\n` +
@@ -1598,12 +2259,82 @@ function renderStats() {
     calCursor = new Date(ref.getFullYear(), ref.getMonth(), 1);
   }
   renderCalendar(days);
+  renderGoals();
+  renderWeeks();
   renderProgressCards(sess);
+}
+
+/* ---- Wochenziele ---- */
+function renderGoals() {
+  const today = todayISO();
+  document.getElementById('goalGym').textContent  = goalAt('gym', today) + '×';
+  document.getElementById('goalMove').textContent = goalAt('move', today) + '×';
+}
+
+document.querySelectorAll('[data-goal]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const kind = btn.getAttribute('data-goal');
+    const d = parseInt(btn.getAttribute('data-d'), 10);
+    setGoal(kind, goalAt(kind, todayISO()) + d);
+    renderGoals();
+    renderWeeks();
+    toast('Ziel gilt ab dieser Woche');
+  });
+});
+
+/* ---- Soll/Ist je Kalenderwoche. Kein Mittelwert: jede Woche steht für sich,
+       auch die ohne jede Aktivität. ---- */
+function cell(ist, soll) {
+  if (soll <= 0) return `<td class="miss">${ist}</td>`;
+  const cls = ist >= soll ? 'hit' : (ist === 0 ? 'zero' : 'miss');
+  return `<td class="${cls}">${ist} / ${soll}</td>`;
+}
+
+function renderWeeks() {
+  const rows = weekRows();
+  const box = document.getElementById('weekTable');
+  const sum = document.getElementById('weekSummary');
+  if (!rows.length) {
+    box.innerHTML = '<div class="empty-note" style="padding:0">Noch nichts erfasst.</div>';
+    sum.textContent = '';
+    return;
+  }
+  const show = rows.slice(-12).reverse();
+  box.innerHTML = `
+    <table class="weeks">
+      <tr><th>Woche</th><th>Gym</th><th>Bewegung</th></tr>
+      ${show.map(w => `
+        <tr class="${w.running ? 'now' : ''}">
+          <td>KW ${w.week} · ${fmtDate(w.monday)}–${fmtDate(w.sunday)}${w.running ? ' <span style="color:var(--ink-faint)">läuft</span>' : ''}</td>
+          ${cell(w.gym, w.gymGoal)}
+          ${cell(w.move, w.moveGoal)}
+        </tr>`).join('')}
+    </table>`;
+
+  const done = rows.filter(w => !w.running);
+  const gymOk  = done.filter(w => w.gym  >= w.gymGoal).length;
+  const movOk  = done.filter(w => w.move >= w.moveGoal).length;
+  const leer   = done.filter(w => w.gym === 0).length;
+  const now = rows[rows.length - 1];
+  const parts = [];
+  if (done.length) {
+    parts.push(`Gym-Ziel in ${gymOk} von ${done.length} abgeschlossenen Wochen erreicht`);
+    parts.push(`Bewegungsziel in ${movOk} von ${done.length}`);
+    if (leer) parts.push(`${leer} ${leer === 1 ? 'Woche' : 'Wochen'} ganz ohne Gym`);
+  }
+  if (now) {
+    const f = [];
+    if (now.gym  < now.gymGoal)  f.push(`${now.gymGoal - now.gym}× Gym`);
+    if (now.move < now.moveGoal) f.push(`${now.moveGoal - now.move}× Bewegung`);
+    parts.push(f.length ? `diese Woche fehlen noch ${f.join(' und ')}` : 'diese Woche sind beide Ziele erreicht');
+  }
+  sum.textContent = parts.join(' · ');
 }
 
 function renderCalendar(days) {
   const y = calCursor.getFullYear(), m = calCursor.getMonth();
   const hits = new Set(days);
+  const walks = new Set(moveDays());
   const offset = (new Date(y, m, 1).getDay() + 6) % 7;
   const dim = new Date(y, m + 1, 0).getDate();
   const today = todayISO();
@@ -1613,15 +2344,22 @@ function renderCalendar(days) {
     const iso = `${y}-${pad2(m + 1)}-${pad2(d)}`;
     const cls = ['d'];
     if (hits.has(iso)) cls.push('hit');
+    if (walks.has(iso)) cls.push('walk');
     if (iso === today) cls.push('today');
     cells += `<div class="${cls.join(' ')}">${d}</div>`;
   }
   document.getElementById('calGrid').innerHTML = cells;
   document.getElementById('calMonth').textContent = `${MONTHS[m]} ${y}`;
 
+  document.getElementById('calKey').innerHTML =
+    '<span><i style="background:var(--accent)"></i>Krafttraining</span>' +
+    '<span><i style="background:var(--ready-bg); box-shadow: inset 0 0 0 1px var(--ready-line)"></i>Alltagsbewegung</span>';
+
   const monthKey = `${y}-${pad2(m + 1)}`;
   const inMonth = days.filter(d => d.startsWith(monthKey)).length;
+  const inMonthWalk = [...walks].filter(d => d.startsWith(monthKey)).length;
   const parts = [`${inMonth} ${inMonth === 1 ? 'Training' : 'Trainings'} in diesem Monat`];
+  if (inMonthWalk) parts.push(`${inMonthWalk}× Bewegung`);
   if (days.length) {
     const since = daysBetween(days[days.length - 1], today);
     parts.push(since <= 0 ? 'zuletzt heute' : since === 1 ? 'zuletzt gestern' : `zuletzt vor ${since} Tagen`);
@@ -1716,15 +2454,20 @@ document.querySelectorAll('.tab').forEach(btn => {
     const view = btn.getAttribute('data-view');
     document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
     document.getElementById('viewTrain').hidden = view !== 'train';
+    document.getElementById('viewMove').hidden  = view !== 'move';
     document.getElementById('viewBody').hidden  = view !== 'body';
     document.getElementById('viewStats').hidden = view !== 'stats';
     document.body.classList.toggle('stats', view === 'stats');
     document.body.classList.toggle('body-view', view === 'body');
+    document.body.classList.toggle('move-view', view === 'move');
     if (view === 'stats') renderStats();
     if (view === 'body') renderBody();
+    if (view === 'move') renderMove();
     window.scrollTo(0, 0);
   });
 });
+
+runMigration();
 
 renderExercises();
 renderWarm();
